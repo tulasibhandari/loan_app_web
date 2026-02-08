@@ -92,7 +92,7 @@ class GuarantorDetails(models.Model):
     guarantor_age = models.CharField(max_length=10)
 
     class Meta:
-        db_name = 'guarantor_details'
+        db_table = 'guarantor_details'
 
     def __str__(self):
         return f"{self.member.member_number} - {self.guarantor_name}"
