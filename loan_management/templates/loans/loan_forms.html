@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Loan Application{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <!-- Member Header -->
+     <div class="card mb-3" style="background: linear-gradient(135deg, #34a1c3, #2c9faf);">
+        <div class="card-body text-white">
+            <h5><i class="bi bi-person-badge"></i> Member Information </h5>
+            <p class="mb-0">
+                <strong>Member Number:</strong> {{member.member_number}} |
+                <strong>Member Name:</strong> {{member.member_name}}
+            </p>
+        </div>
+     </div>
+
+     <!-- Loan Form -->
+      <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0 nepali-text">
+                <i class="bi bi-cash-coin"></i> Loan Application (ऋण माग)
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="post" id="loanForm">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label nepali-text">Loan Type</label>
+                        <select name="loan_type" id="id_loan_type" class="form-select" required>
+                            <option value="">Select loan type</option>
+                            {% for scheme in loan_schemes %}
+                            <option value="{{ scheme.loan_type}}" data-rate="{{ scheme.interest_rate}}">
+                                {{scheme.loan_type}}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-class nepali-text"> Interest Rate</label>
+                        {{ form.interest_rate}}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-class nepali-text">Loan Duration</label>
+                        {{form.loan_duration}}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-class nepali-text">Repayment Duration</label>
+                        {{form.repayment_duration}}
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-class nepali-text">Loan Completion Year(BS)</label>
+                        {{form.loan_completion_year}}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-class nepali-text">Loan Completion Month</label>
+                        {{form.loan_completion_month}}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-class nepali-text">Loan Completion Day</label>
+                        {{form.loan_completion_day}}
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2 mt-4">
+                    <button class="btn btn-success" type="submit">
+                        <i class="bi bi-save"></i> Save & Continue
+                    </button>
+                    <a href="{% url 'members:member_detail' member.member_number %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+      </div>
+</div>
+{% endblock content %}
+
+{% block extra_js%}
+<script>
+    $(document).ready(function(){
+        // auto fill interest rate when loan_type changes
+        $('#id_loan_type').change(function(){
+            var rate = $(this).find(':selected').data('rate');
+            $('#id_interest_rate').val(rate);
+        });
+
+        //convert amount to words (simplified - implement full conversion)
+        $('#id_loan_amount').on('input', function(){
+            var amount = $(this).val();
+            // add your number to Nepali words conversion header
+            $('#id_loan_amount_in_words').val('Amount in words: ' + amount);        
+        });
+    });
+</script>
+{% endblock %}
