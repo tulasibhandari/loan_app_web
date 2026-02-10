@@ -50,15 +50,33 @@
                     <label for="" class="form-label fw-bold">Select Reports to Generate</label>
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" name="report_types" value="loan_application" checked>
-                        <label for="" class="form-label">Loan Application</label>
+                        <label for="" class="form-label nepali-text">Loan Application । ऋण आवेदन</label>
                     </div>
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" name="report_types" value="tamasuk">
-                        <label for="" class="form-label">Loan Application</label>
+                        <label for="" class="form-label nepali-text">Tamasuk । तमासुक</label>
                     </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="report_types" value="loan_approval">
+                        <label for="" class="form-label nepali-text">Loan Approval । ऋण स्वीकृत</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="report_types" value="debit_authority">
+                        <label for="" class="form-label nepali-text">Debit Authority । खाता अख्तियारी</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="report_types" value="manjurinama">
+                        <label for="" class="form-label nepali-text">Consent । मञ्जु्रीनामा</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="report_types" value="guarantor">
+                        <label for="" class="form-label nepali-text">Personal Guarantee । व्यक्तिगत जमानी</label>
+                    </div>                    
                 </div>
 
-
+                <button type ="submit" class="btn btn-success btn-lg">
+                    <i class="bi bi-file-earmark-arrow-down">Generate Reports</i>
+                </button>
             </form>
         </div>
 
