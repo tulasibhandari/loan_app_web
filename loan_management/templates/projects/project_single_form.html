@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %} {{action}} - Projects {% endblock title %}
+
+{% block content %}
+<div class="container">
+    <!-- Member Information -->
+    <div class="card mb-3" style="background: linear-gradient(135deg, #34a1c3, #2c9faf)">
+        <div class="card-body text-white">
+            <h5><i class="bi bi-person-badge"></i>{{member.member_number}} - {{member.member-name}}</h5>
+        </div>
+    </div>
+
+    <!--Single project form-->
+    <div class="card">
+        <div class="card-header">
+            <div class="mb-0 nepali-text">
+                <i class="bi bi-briefcase"></i>
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
