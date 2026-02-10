@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Report Generation{% endblock title %}Report Generation-
+
+{% block content %}
+<div class="container">
+    <div class="card" style="border-top:4px solid var(--info-color);">
+        <div class="card-header">
+            <h4 class="mb-0"><i class="bi bi-file-earmark-text"></i>Report Generation</h4>
+        </div>
+
+        <div class="card-body">
+            <form method="post" action="{% url 'reports:generate_report' %}">
+                {% csrf_token %}
+
+                <!-- Member Selection -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Select Approved Member</label>
+                    <select name="member_number" class="form-select" required>
+                        <option value="">Choose a member ..</option>
+                        {% for loan in approved_loans %}
+                        <option value="{{ loan.member.member_number }}">
+                            {{ loan.member.member_number }} - {{loan.member.member_name}}
+                            ({{ loan.loan_type }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!--Loan Type-->
+                <div class="mb-4">
+                    <label for="" class="form-label fw-bold">Loan Type</label>
+                    <input type="text" name="loan_type" class="form-control" required>
+                </div>
+
+                <!--Approver Details-->
+                <div class="row mb-4">
+                    <div class="col-md--6">
+                        <label for="" class="form-label">Approved By</label>
+                        <input type="text" name="approved_by" class="form-control" required>
+                    </div>
+                    <div class="col-md--6">
+                        <label for="" class="form-label">Approver Post</label>
+                        <input type="text" name="approved_post" class="form-control" required>
+                    </div>
+                </div>
+
+                <!--Report Types-->
+                <div class="mb-4">
+                    <label for="" class="form-label fw-bold">Select Reports to Generate</label>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="report_types" value="loan_application" checked>
+                        <label for="" class="form-label">Loan Application</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="report_types" value="tamasuk">
+                        <label for="" class="form-label">Loan Application</label>
+                    </div>
+                </div>
+
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+{% endblock content %}
+
+
