@@ -11,7 +11,7 @@ def home(request):
     total_members = Member.objects.count()
     total_loans = LoanInfo.objects.count()
     pending_loans = LoanInfo.objects.filter(status='pending').count()
-    approved_loans = LoanInfo.objects.filter(staus='approved').count()
+    approved_loans = LoanInfo.objects.filter(status='approved').count()
 
     # Recent Loans
     recent_loans = LoanInfo.objects.select_related('member').order_by('-created_at')[:10]
