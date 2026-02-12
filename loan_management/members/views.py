@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
-from utils.excel_handler import ExcelHandler
+from .utils.excel_handler import ExcelHandler
 import os
 from django.conf import settings
 from django.db.models import Q

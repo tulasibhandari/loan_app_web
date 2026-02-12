@@ -1,0 +1,180 @@
+{% extends "base.html" %} {% block title %} Import Members from Excel{% endblock
+%} {% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <!-- Instructions Card -->
+      <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">
+            <i class="bi-bi-info-circle"></i>
+            EXcel Import Instructions | निर्देशन
+          </h5>
+        </div>
+        <div class="card-body">
+          <h6 class="nepali-text">चरणहरु (Steps):</h6>
+          <ol>
+            <li class="mb-2">
+              <strong>Download Template</strong>
+              <span class="nepali-text">(टेम्प्लेट डाउनलोड गर्नुहोस)</span>
+              <p class="text-muted small mb-0">
+                Click "Download Template" button below to get the Excel template
+              </p>
+            </li>
+            <li class="mb-2">
+              <strong>Fill Member Data</strong>
+              <span class="nepali-text">(सदस्य डाटा भर्नुहोस)</span>
+              <p class="text-muted small mb-0">
+                Open the template in Excel and fill in member information
+              </p>
+            </li>
+            <li class="mb-2">
+              <strong>Save as .xlsx</strong>
+              <span class="nepali-text"
+                >(Excel format मा सुरक्षित गर्नुहोस्)</span
+              >
+              <p class="text-muted small mb-0">
+                Make sure to save the file as .xlsx format
+              </p>
+            </li>
+            <li class="mb-2">
+              <strong>Upload & Import</strong>
+              <span class="nepali-text">अपलोड र Import गर्नुहोस्</span>
+              <p class="text-muted small mb-0">
+                Use the form below to upload and import member data
+              </p>
+            </li>
+          </ol>
+
+          <div class="alert alert-warning mt-3">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong class="nepali-text">महत्वपूर्ण(Important):</strong>
+            <ul class="mb-0 mt-2">
+              <li>Date format: YYYY-MM-DD (e.g. 2024-01-15)</li>
+              <li>Member numbers must be unique</li>
+              <li>Required fields: date, member_number, member_name</li>
+              <li>Remove sample data before importing</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!--Download Template Button -->
+      <div class="card mb-4">
+        <div class="card-body text-center">
+          <h5 class="card-title nepali-text">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            पहिले टेम्प्लेट डाउनलोड गर्नुहोस
+          </h5>
+          <p class="text-muted">Get the Excel template with correct format</p>
+          <a
+            href="{% url 'members:download_template' %}"
+            class="btn btn-primary btn-lg"
+          >
+            <i class="bi bi-download"></i> Download Template
+          </a>
+        </div>
+      </div>
+
+      <!--Upload Form-->
+      <div class="card">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-upload"></i>
+            Upload Excel File | Excel File अपलोड गर्नुहोस
+          </h5>
+        </div>
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-4">
+              <label for="excel_file" class="form-label">
+                <strong class="nepali-text"
+                  >Excel File छान्नुहोस (Select Excel File)</strong
+                >
+              </label>
+              <input
+                type="file"
+                class="form-control form-control-lg"
+                id="excel_file"
+                name="excel_file"
+                accept=".xlsx"
+                required
+              />
+              <small class="form-text text-muted">
+                Only .xlsx files are acceptedd
+              </small>
+            </div>
+
+            <div class="alert alert-info">
+              <i class="bi bi-lightbulb"></i>
+              <strong>Tip:</strong>If member number already exists, data will be
+              updated. New member numbers will be added.
+            </div>
+
+            <div class="d-flex gap-2 justify-contend-end">
+              <a
+                href="{% url 'members:member_list' %}"
+                class="btn btn-secondary"
+              >
+                <i class="bi bi-x-circle"></i>Cancel
+              </a>
+            </div>
+            <button class="btn btn-success btn-lg">
+              <i class="bi bi-cloud-upload"></i>
+              <span class="nepali-text">Import गर्नुहोस्</span> (Import)
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Sample Data Preview -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h6 class="mb-0"><i class="bi bi-table"></i> Sample Data Format</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+              <thead class="table-light">
+                <tr>
+                  <th>date</th>
+                  <th>member_number</th>
+                  <th>member_name</th>
+                  <th>phone</th>
+                  <th>email</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>2024-01-15</td>
+                  <td>000000001</td>
+                  <td class="nepali-text">राम बहादुर श्रेष्ठ</td>
+                  <td>9841234567</td>
+                  <td>ram@example.com</td>
+                </tr>
+                <tr>
+                  <td>2024-01-16</td>
+                  <td>000000002</td>
+                  <td class="nepali-text">सीता देवी पौडेल</td>
+                  <td>9851234567</td>
+                  <td>sita@example.com</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <small class="text-muted"
+            >...and 15 more columns in the template</small
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+</style>
+{% endblock %}
