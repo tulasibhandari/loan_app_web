@@ -3,9 +3,72 @@
 
 
 {% block contents %}
-.container
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="nepali-text"><i class="bi bi-people">सदस्य सूची (Members List)</i></h2>
+
+        <!-- Action Buttons-->
+        <div class="btn-group">
+            <a href="{% url 'members:member_create' %}" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i>Add New
+            </a>
+
+            <!-- Excel Operations Dropdown-->
+            <div class="btn-group" role="group">
+                <button type="button"
+                        class="btn btn-success dropdown-toggle"
+                        data-bs-toggle="dropdown">
+                    <i class="bi bi-file-earmark-excel"></i>Excel
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a href="{% url 'members:download_template' %}" class="dropdown-menu">
+                        <i class="bi bi-download"></i> Download Template
+                    </a>
+                    </li>
+                    
+                    <li><a href="{% url 'members:import_page' %}" class="dropdown-menu">
+                        <i class="bi bi-upload"></i> Import Members
+                    </a>
+                    </li>
+
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+
+                    <li><a href="" class="dropdown-menu">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Export Members
+                    </a></li>
+
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!--Members Table -->
+    <div class="card">
+        
+        {% if members %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Member Number</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Address</th>
+                        <th>Date</th>
+                        <th>Act</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+            
+        {% endif %}
+            
+    </div>
+</div>
 
 
 {% endblock contents %}
-
 
