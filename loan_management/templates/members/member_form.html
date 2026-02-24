@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %} {{ title }} {% endblock title %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        background: #f8f9fa;
+        border-left: 4px solid #3498db;
+        padding: 20px;
+        margin-bottom: 25px;
+        border-radius: 8px;
+    }
+
+    .form-section h5 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .required_field::after {
+        content: " *";
+        color: #e74c3c;
+    }
+
+    .form-control, .form-select {
+        border-radius: 6px;
+        border: 1px solid #dfe6e9;
+        padding: 10px 15px;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25)
+    }
+
+    .help-text {
+        font-size: 0.875rem;
+        color: #7f8c8d;
+        margin-top: 5px;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="card mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="card-body text-white">
+            <h4 class="mb-0">
+                <i class="bi bi-person-plus"></i>
+                <span class="nepali-text">{{ title }}</span>
+            </h4>
+            <p class="mb-0 mt-2">
+                {% if action == 'Create' %}
+                Fill in the member details below to add a new member
+                {% else %}
+                Update member information
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <!-- Basic information -->
+        <div class="form-section">
+            <h5>
+                <i class="bi bi-person-badge"></i>
+                <span class="nepali-text">आधारभूत जानकारी (Basic Information)</span>
+            </h5>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label required-field">Date</label>
+                    {% render_field form.date class="form-control" type="date" %}
+                    {% if form.date.errors %}
+                    <div class="text-danger mt-1">{{form.date.errors}}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label required-field nepali-text">
+                        सदस्य नं (Member Number)
+                    </label>
+                    {% render_field form.member_number class="form-control" placeholder="001000001" %}
+                    <small class="help-text">9 digits with leading zeros</small>
+                    {% if form.member_number.errors %}
+                    <div class="text-danger mt-1">{{form.member_number.errors}}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label required-field nepali-text">
+                        सदस्यको नाम (Member Name)
+                    </label>
+                    {% render_field form.member_name class="form-control nepali-text" placeholder="सदस्यको नाम" %}
+                    {% if form.member_name.errors %}
+                    <div class="text-danger mt-1">{{form.member_name.errors}}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label nepali-text">
+                        फोन (Phone)
+                    </label>
+                    {% render_field form.phone class="form-control" placeholder="9812345678" %}
+                    {% if form.phone.erros %}
+                    <div class="text-danger mt-1">{{form.phone.errors}}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Email</label>
+                    {% render_field form.email class="form-control" type="email" placeholder="member@example.com" %}
+                    {% if form.email.errors %}
+                    <div class="text-danger mt-1">{{form.email.errors}}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label nepali-text">जन्ममिति BS (Date of Birth)</label>
+                    {% render_field form.dob_bs class="form-control" placeholder="2040-01-01" %}
+                    <small class="help-text">Format: YYYY-MM-DD (BS)</small>
+                    {% if form.dob_bs.errors %}
+                    <div class="text-danger mt-1">{{form.dob_bs.errors}}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label nepali-text">नागरिकता नं (Citizenship No.)</label>
+                    {% render_field form.citizenship_no class="form-control nepali-text"%}
+                    {% if form.citizenship_no.errors %}
+                    <div class="text-danger mt-1">{{form.citizenship_no.errors}}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label nepali-text">पेशा (Profession)</label>
+                    {% render_field form.profession class="form-control nepali-text" %}
+                    {% if form.profession.errors%}
+                    <div class="text-danger mt-1">{{form.profession.errors}}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!--Family Information -->
+        <div class="form-section">
+            <h5>
+                <i class="bi bi-people"></i>
+                <span class="nepali-text">पारिवारिक विवरण (Family Information)</span>
+            </h5>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label nepali-text">बुवाको नाम (Father's Name)</label>
+                    {%render_field form.father_name class="form-control nepali-text" placeholder="बुवाको नाम" %}
+                    {% if form.father_name.errors %}
+                    <div class="text-danger mt-1">{{form.father_name.errors}}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label nepali-text">बाजेको नाम (Grandfather's Name)</label>
+                    {%render_field form.grandfather_name class="form-control nepali-text" placeholder="बाजेको नाम" %}
+                    {% if form.grandfather_name.errors %}
+                    <div class="text-danger mt-1">{{form.grandfather_name.errors}}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label nepali-text">पति / पत्नीको नाम (Spouse's Name)</label>
+                    {%render_field form.spouse_name class="form-control nepali-text" placeholder="पति वा पत्नीको नाम" %}
+                    {% if form.spouse_name.errors %}
+                    <div class="text-danger mt-1">{{form.spouse_name.errors}}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label nepali-text">पति / पत्नीको फोन (Spouse's Phone)</label>
+                    {%render_field form.spouse_phone class="form-control nepali-text" placeholder="9841234568" %}
+                    {% if form.spouse_phone.errors %}
+                    <div class="text-danger mt-1">{{form.spouse_phone.errors}}</div>
+                    {% endif %}
+                </div>                
+            </div>
+        </div>
+
+        <!-- Address Details -->
+        <div class="form-section">
+            <h5>
+                <i class="bi bi-geo-alt"></i>
+                <span class="nepali-text">ठेगाना (Address Information)</span>
+            </h5>
+
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label class="form-label nepali-text">ठेगाना (Address)</label>
+                    {%render_field form.address class="form-control nepali-text" %}
+                    {% if form.address.errors %}
+                    <div class="text-danger mt-1">{{form.address.errors}}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label nepali-text">वार्ड नं (Ward No.)</label>
+                    {%render_field form.ward_no class="form-control nepali-text" %}
+                    {% if form.ward_no.errors %}
+                    <div class="text-danger mt-1">{{form.ward_no.errors}}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Business Information -->
+        <div class="form-section">
+            <h5>
+                <i class="bi bi-briefcase"></i>
+                <span class="nepali-text">व्यवसाय जानकारी (Business Information)</span>
+            </h5>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label nepali-text">व्यवसायको नाम (Business Name)</label>
+                    {%render_field form.business_name class="form-control nepali-text" %}
+                    {% if form.business_name.errors %}
+                    <div class="text-danger mt-1">{{form.business_name.errors}}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label nepali-text">व्यवसायको ठेगाना (Business Address)</label>
+                    {%render_field form.business_address class="form-control nepali-text" %}
+                    {% if form.business_address.errors %}
+                    <div class="text-danger mt-1">{{form.business_address.errors}}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label nepali-text">जागिरको नाम (Job Name)</label>
+                    {%render_field form.job class="form-control nepali-text" %}
+                    {% if form.job.errors %}
+                    <div class="text-danger mt-1">{{form.job.errors}}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label nepali-text">जागिरको ठेगाना (Job Address)</label>
+                    {%render_field form.job_address class="form-control nepali-text" %}
+                    {% if form.job_address.errors %}
+                    <div class="text-danger mt-1">{{form.job_address.errors}}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Social Media -->
+        <div class="form-section">
+            <h5>
+                 <i class="bi bi-chat-dots"></i>
+                 <span class="nepali-text"> सामाजिक सञ्जाल (Social Media)</span>
+            </h5>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Facebook</label>
+                    {% render_field form.facebook_detail class="form-control" placeholder="facebook.com/username" %}
+                    {% if form.facebook_detail.errors %}
+                    <div class="text-danger mt-1">{{ form.facebook_detail.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Whatsapp</label>
+                    {% render_field form.whatsapp_detail class="form-control" placeholder="9812345678" %}
+                    {% if form.whatsapp_detail.errors %}
+                    <div class="text-danger mt-1">{{ form.whatsapp_detail.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex gap-2 justify-content-end">
+                    <a href="{% url 'members:member_list' %}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-x-circle"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="bi bi-check-circle"></i>
+                        {% if action == 'Create' %}
+                            <span class="nepali-text">सदस्य थप्नुहोस</span> (Save)
+                        {% else %}
+                        <span class="nepali-text">अपडेट गर्नुहोस</span> (Update)
+                        {% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function(){
+    // Auto-format member Number
+    $('input[name="member_name"]').on('blur', function(){
+        var value = $(this).val().replace(/\D/g, ''); // remove non-digits
+        if (value.length > 0 && value.length <=9) {
+            $(this).val(value.padStart(9, '0')); // Pad with zeros
+        }
+    });
+
+    // Phone number validation (10 digits)
+    $('input[name="phone"], input[name="spouse_phone"]').on('input', function(){
+        this.value = this.value.replace(/\D/g, '').slice(0, 10);
+    });
+
+    // Set today's date as default if empty
+    var dateField = $('input[name="date"]');
+    if(!dateField.val()){
+        var today = new Date().toISOString().split('T')[0];
+        dateField.val(today);
+    }
+});
+</script>
+
+{% endblock extra_js %}
