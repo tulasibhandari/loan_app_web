@@ -30,6 +30,30 @@ SIDEBAR_HTML = """
         <i class="bi bi-gear"></i> Admin Panel
     </a>
     {% endif %}
+
+    <div class="dropdown">
+        <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="bi bi-file-earmark-excel"></i>Excel Tools
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="{% url 'members:download_template' %}" class="dropdown-item">
+                    <i class="bi bi-download"></i>Download Template
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'members:import_page' %}" class="dropdown-item">
+                    <i class="bi bi-upload"></i>Import Members
+                </a>
+            </li>
+            <li>
+                <hr class="dropdown-divider">
+            </li>
+            <li><a href="#" class="dropdown-item"></a>
+                <i class="bi bi-file-earmark-arrow-down"></i>Export Members
+            </li>
+        </ul>
+    </div>
 </nav>
 """
 
