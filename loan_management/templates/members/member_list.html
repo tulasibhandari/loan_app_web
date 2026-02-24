@@ -1,13 +1,97 @@
-{% extends "base.html" %}
-{% block title %}Members List{% endblock title %}
+{% extends 'base.html' %}
 
+{% block title %}Members List{% endblock %}
 
-{% block contents %}
+{% block content %}
 <div class="container-fluid">
-    .d-flex.justify-content-between
-</div> 
-
-
-{% endblock contents %}
-
-
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-people"></i> सदस्य सूची (Members List)</h2>
+        
+        <!-- Action Buttons -->
+        <div class="btn-group">
+            <a href="{% url 'members:member_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add New
+            </a>
+            
+            <!-- Excel Operations Dropdown -->
+            <div class="btn-group" role="group">
+                <button type="button" 
+                        class="btn btn-success dropdown-toggle" 
+                        data-bs-toggle="dropdown">
+                    <i class="bi bi-file-earmark-excel"></i> Excel
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="{% url 'members:download_template' %}">
+                            <i class="bi bi-download"></i> Download Template
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'members:import_page' %}">
+                            <i class="bi bi-upload"></i> Import Members
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'members:import_page' %}">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Export All Members
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Members Table -->
+    <div class="card">
+        <div class="card-body">
+            {% if members %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Member Number</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Address</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr>
+                            <td>{{ member.member_number }}</td>
+                            <td class="nepali-text">{{ member.member_name }}</td>
+                            <td>{{ member.phone }}</td>
+                            <td>{{ member.email }}</td>
+                            <td class="nepali-text">{{ member.address }}</td>
+                            <td>{{ member.date|date:"Y-m-d" }}</td>
+                            <td>
+                                <a href="{% url 'members:member_detail' member.member_number %}" 
+                                   class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'loans:loan_create' member.member_number %}" 
+                                   class="btn btn-sm btn-success">
+                                    <i class="bi bi-cash-coin"></i> Loan
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle"></i> No members found.
+                <a href="{% url 'members:import_page' %}" class="alert-link">
+                    Import from Excel
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
