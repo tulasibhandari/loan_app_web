@@ -143,16 +143,193 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <i class="bi bi-person-badge"></i>
-                    <span class="nepali-text"></span>
+                    <span class="nepali-text">व्यक्तिगत विवरण (Personal Information)</span>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <div class="info-label nepali-text">फोन (Phone):</div>
+                        <div class="info-value">
+                            {% if member.phone %}
+                            <i class="bi bi-telephone"></i>{{member.phone}}
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Email:</div>
+                        <div class="info-value">
+                            {% if member.email %}
+                            <i class="bi bi-envelope"></i> {{member.email}}
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">जन्ममिति (DOB):</div>
+                        <div class="info-value">
+                            {{member.dob_bs|default:"-"}}
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text"> नागरिकता (Citizenship):</div>
+                        <div class="info-value">
+                            {{ member.citizenship_no|default:"-" }}
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">पेशा (Profession):</div>
+                        <div class="info-value">
+                            {{member.profession|default:"-"}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Family Information -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people"></i>
+                        <span class="nepali-text">पारिवारिक विवरण (Family Details)</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <div class="info-label nepali-text">बुवाको नाम (Father):</div>
+                        <div class="info-value nepali-text">{{member.father_name|default:"-"}}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">बाजेको नाम (Grandfather):</div>
+                        <div class="info-value nepali-text">{{ member.grandfather_name|default:"-" }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">पति/पत्नी (Spouse):</div>
+                        <div class="info-value nepali-text">{{member.spouse_name|default:"-"}}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">पति/पत्नीको फोन: </div>
+                        <div class="info-value nepali-text">{{member.spouse_phone|default:"-"}}</div>
+                    </div>
+                </div>
+            </div>
+           <!-- Business / Job Information -->
+           <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-briefcase"></i>
+                        <span class="nepali-text">व्यवसाय / जागिर (Business/Job)</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <div class="info-label nepali-text">व्यवसायको नाम:</div>
+                        <div class="info-value nepali-text">{{ member.business_name|default:"-" }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">व्यवसायको ठेगाना:</div>
+                        <div class="info-value nepali-text">{{ member.business_address|default:"-" }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">जागिरको नाम:</div>
+                        <div class="info-value">{{ member.job|default:"-" }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">जागिरको ठेगाना:</div>
+                        <div class="info-value nepali-text">{{ member.job_address|default:"-" }}</div>
+                    </div>
+                </div>
+           </div>             
+        </div>
+
+        
+        <!-- Right Column -->
+        <div class="col-md-4">
+            <!-- Address -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i class="bi bi-geo-alt"></i> 
+                        <span class="nepali-text">ठेगाना (Address)</span>
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2 nepali-text">
+                        <strong>{{ member.address|default:"Not specified" }}</strong>
+                    </p>
+                    {% if member.ward_no %}
+                    <p class="mb-0 text-muted">
+                        <i class="bi bi-signpost"></i> Ward No: {{ member.ward_no }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Social Media -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-chat-dots"></i> Social Media
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if member.facebook_detail %}
+                    <p class="mb-2">
+                        <i class="bi bi-facebook text-primary"></i> 
+                        {{ member.facebook_detail }}
+                    </p>
+                    {% endif %}
+                    {% if member.whatsapp_detail %}
+                    <p class="mb-0">
+                        <i class="bi bi-whatsapp text-success"></i> 
+                        {{ member.whatsapp_detail }}
+                    </p>
+                    {% endif %}
+                    {% if not member.facebook_detail and not member.whatsapp_detail %}
+                    <p class="text-muted mb-0">No social media info</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Recent Loans -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-cash-coin"></i> Recent Loans
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if loans %}
+                    <div class="list-group list-group-flush">
+                        {% for loan in loans|slice:":3" %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between">
+                                <span class="nepali-text">{{ loan.loan_type }}</span>
+                                <span class="badge bg-{{ loan.status }}">{{ loan.status }}</span>
+                            </div>
+                            <small class="text-muted">{{ loan.loan_amount }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if loans.count > 3 %}
+                    <a href="#" class="btn btn-sm btn-outline-success w-100 mt-2">
+                        View All Loans
+                    </a>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted mb-0">No loans yet</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Back Button -->
+    <div class="text-center mb-4">
+        <a href="{% url 'members:member_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Members List
+        </a>
+    </div>
 </div>
-
-
-
-
-
-
 {% endblock content %}
