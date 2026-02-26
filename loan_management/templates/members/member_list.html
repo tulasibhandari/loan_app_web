@@ -1,82 +1,288 @@
+<!-- templates/members/member_list.html -->
 {% extends 'base.html' %}
 
-{% block title %}Members List{% endblock %}
+{% block title %}सदस्य सूची - Members List{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .search-box {
+        border-radius: 25px;
+        border: 2px solid #e0e0e0;
+        padding: 10px 20px;
+    }
+    
+    .search-box:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    
+    .action-buttons .btn {
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+        cursor: pointer;
+    }
+    
+    .member-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-people"></i> सदस्य सूची (Members List)</h2>
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-3">
+                <i class="bi bi-people-fill"></i> 
+                <span class="nepali-text">सदस्य सूची</span> (Members List)
+            </h2>
+            <p class="text-muted">
+                Manage all your organization members
+            </p>
+        </div>
         
-        <!-- Action Buttons -->
-        <div class="btn-group">
-            <a href="{% url 'members:member_create' %}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Add New
-            </a>
-            
-            <!-- Excel Operations Dropdown -->
-            <div class="btn-group" role="group">
-                <button type="button" 
-                        class="btn btn-success dropdown-toggle" 
-                        data-bs-toggle="dropdown">
-                    <i class="bi bi-file-earmark-excel"></i> Excel
-                </button>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a class="dropdown-item" href="{% url 'members:download_template' %}">
-                            <i class="bi bi-download"></i> Download Template
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="{% url 'members:import_page' %}">
-                            <i class="bi bi-upload"></i> Import Members
-                        </a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a class="dropdown-item" href="{% url 'members:import_page' %}">
-                            <i class="bi bi-file-earmark-arrow-down"></i> Export All Members
-                        </a>
-                    </li>
-                </ul>
+        <div class="col-md-4 text-end">
+            <div class="action-buttons">
+                <!-- Add New Member -->
+                <a href="{% url 'members:member_create' %}" 
+                   class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle"></i> Add New Member
+                </a>
+                
+                <!-- Excel Operations Dropdown -->
+                <div class="btn-group">
+                    <button type="button" 
+                            class="btn btn-success btn-lg dropdown-toggle" 
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="bi bi-file-earmark-excel"></i> Excel Tools
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <h6 class="dropdown-header">
+                                <i class="bi bi-download"></i> Download
+                            </h6>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'members:download_template' %}">
+                                <i class="bi bi-file-earmark-text"></i> 
+                                Download Template
+                                <small class="text-muted d-block">Empty template for import</small>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'members:export_members' %}">
+                                <i class="bi bi-file-earmark-arrow-down"></i> 
+                                Export All Members
+                                <small class="text-muted d-block">Download existing data</small>
+                            </a>
+                        </li>
+                        
+                        <li><hr class="dropdown-divider"></li>
+                        
+                        <li>
+                            <h6 class="dropdown-header">
+                                <i class="bi bi-upload"></i> Import
+                            </h6>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'members:import_page' %}">
+                                <i class="bi bi-cloud-upload"></i> 
+                                Import Members
+                                <small class="text-muted d-block">Upload Excel file</small>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h6 class="mb-2">
+                    <i class="bi bi-people"></i> Total Members
+                </h6>
+                <h2 class="mb-0">{{ members.count }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <h6 class="mb-2">
+                    <i class="bi bi-person-plus"></i> New This Month
+                </h6>
+                <h2 class="mb-0">{{ new_this_month|default:0 }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <h6 class="mb-2">
+                    <i class="bi bi-cash-coin"></i> Active Loans
+                </h6>
+                <h2 class="mb-0">{{ active_loans|default:0 }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <h6 class="mb-2">
+                    <i class="bi bi-check-circle"></i> Verified
+                </h6>
+                <h2 class="mb-0">{{ members.count }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" 
+                               class="form-control search-box" 
+                               id="searchInput"
+                               placeholder="Search by name, member number, phone, or email...">
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" data-filter="all">
+                            <i class="bi bi-people"></i> All
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-filter="recent">
+                            <i class="bi bi-clock"></i> Recent
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-filter="active">
+                            <i class="bi bi-check-circle"></i> Active
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
     <!-- Members Table -->
     <div class="card">
-        <div class="card-body">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-ul"></i> Members Directory
+                </h5>
+                <span class="badge bg-primary" id="resultCount">
+                    {{ members.count }} member{{ members.count|pluralize }}
+                </span>
+            </div>
+        </div>
+        <div class="card-body p-0">
             {% if members %}
             <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
+                <table class="table table-hover mb-0" id="membersTable">
+                    <thead class="table-light">
                         <tr>
+                            <th width="50">#</th>
                             <th>Member Number</th>
                             <th>Name</th>
                             <th>Phone</th>
                             <th>Email</th>
                             <th>Address</th>
-                            <th>Date</th>
-                            <th>Actions</th>
+                            <th>Joined Date</th>
+                            <th width="200">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for member in members %}
-                        <tr>
-                            <td>{{ member.member_number }}</td>
-                            <td class="nepali-text">{{ member.member_name }}</td>
-                            <td>{{ member.phone }}</td>
-                            <td>{{ member.email }}</td>
-                            <td class="nepali-text">{{ member.address }}</td>
-                            <td>{{ member.date|date:"Y-m-d" }}</td>
+                        <tr class="member-row">
                             <td>
-                                <a href="{% url 'members:member_detail' member.member_number %}" 
-                                   class="btn btn-sm btn-info">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="{% url 'loans:loan_create' member.member_number %}" 
-                                   class="btn btn-sm btn-success">
-                                    <i class="bi bi-cash-coin"></i> Loan
-                                </a>
+                                <div class="member-avatar">
+                                    {{ member.member_name|slice:":1"|upper }}
+                                </div>
+                            </td>
+                            <td>
+                                <strong>{{ member.member_number }}</strong>
+                            </td>
+                            <td class="nepali-text">
+                                <strong>{{ member.member_name }}</strong>
+                                {% if member.father_name %}
+                                <br><small class="text-muted">
+                                    S/O: {{ member.father_name }}
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if member.phone %}
+                                <i class="bi bi-telephone"></i> {{ member.phone }}
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if member.email %}
+                                <i class="bi bi-envelope"></i> {{ member.email }}
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="nepali-text">
+                                {% if member.address %}
+                                <i class="bi bi-geo-alt"></i> {{ member.address }}
+                                {% if member.ward_no %}
+                                , Ward {{ member.ward_no }}
+                                {% endif %}
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark">
+                                    {{ member.date|date:"Y-m-d" }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'members:member_detail' member.member_number %}" 
+                                       class="btn btn-sm btn-info"
+                                       title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'loans:loan_create' member.member_number %}" 
+                                       class="btn btn-sm btn-success"
+                                       title="Create Loan">
+                                        <i class="bi bi-cash-coin"></i>
+                                    </a>
+                                    <a href="#" 
+                                       class="btn btn-sm btn-warning"
+                                       title="Projects">
+                                        <i class="bi bi-briefcase"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -84,14 +290,110 @@
                 </table>
             </div>
             {% else %}
-            <div class="alert alert-info text-center">
-                <i class="bi bi-info-circle"></i> No members found.
-                <a href="{% url 'members:import_page' %}" class="alert-link">
-                    Import from Excel
-                </a>
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <i class="bi bi-people" style="font-size: 4rem; color: #ccc;"></i>
+                <h4 class="mt-3 nepali-text">कुनै सदस्य भेटिएन (No Members Found)</h4>
+                <p class="text-muted">
+                    Start by adding members manually or importing from Excel
+                </p>
+                <div class="mt-4">
+                    <a href="{% url 'members:member_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Add First Member
+                    </a>
+                    <span class="mx-2">or</span>
+                    <a href="{% url 'members:import_page' %}" class="btn btn-success">
+                        <i class="bi bi-upload"></i> Import from Excel
+                    </a>
+                </div>
             </div>
             {% endif %}
         </div>
+        
+        {% if members %}
+        <div class="card-footer bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    Showing <strong id="showingCount">{{ members.count }}</strong> of 
+                    <strong>{{ members.count }}</strong> members
+                </div>
+                <div>
+                    <!-- Pagination can be added here -->
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Search functionality
+    $('#searchInput').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        var count = 0;
+        
+        $('#membersTable tbody tr').filter(function() {
+            var match = $(this).text().toLowerCase().indexOf(value) > -1;
+            $(this).toggle(match);
+            if (match) count++;
+            return match;
+        });
+        
+        $('#resultCount').text(count + ' member' + (count !== 1 ? 's' : ''));
+        $('#showingCount').text(count);
+    });
+    
+    // Filter buttons
+    $('[data-filter]').on('click', function() {
+        $('[data-filter]').removeClass('active');
+        $(this).addClass('active');
+        
+        var filter = $(this).data('filter');
+        var count = 0;
+        
+        if (filter === 'all') {
+            $('#membersTable tbody tr').show();
+            count = $('#membersTable tbody tr').length;
+        } else if (filter === 'recent') {
+            // Show members from last 30 days
+            var thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            $('#membersTable tbody tr').each(function() {
+                var dateText = $(this).find('td:eq(6)').text().trim();
+                var memberDate = new Date(dateText);
+                var show = memberDate >= thirtyDaysAgo;
+                $(this).toggle(show);
+                if (show) count++;
+            });
+        } else if (filter === 'active') {
+            // Show all for now (can add logic based on loan status)
+            $('#membersTable tbody tr').show();
+            count = $('#membersTable tbody tr').length;
+        }
+        
+        $('#resultCount').text(count + ' member' + (count !== 1 ? 's' : ''));
+        $('#showingCount').text(count);
+    });
+    
+    // Row click to view details
+    $('.member-row').on('click', function(e) {
+        if (!$(e.target).closest('.btn-group').length) {
+            var detailUrl = $(this).find('.btn-info').attr('href');
+            if (detailUrl) {
+                window.location.href = detailUrl;
+            }
+        }
+    });
+    
+    // Tooltip initialization
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
 {% endblock %}

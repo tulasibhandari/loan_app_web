@@ -31,6 +31,7 @@ class ExcelHandler:
             'spouse_name',
             'spouse_phone',
             'address',
+            'ward_no',           
             'business_name',
             'business_address',
             'job_name',
@@ -177,10 +178,10 @@ class ExcelHandler:
                 else:
                     member_numbers.add(row_data['member_number'])
                 
-                if not row_data('member_name'):
+                if not row_data.get('member_name'):
                     errors.append(f"Row {row_num}: member_name is required!")
                 
-                if not row_data('date'):
+                if not row_data.get('date'):
                     warnings.append(f"Row {row_num}: date is missing,, will use today's date")
                 
                 # Validate date format
@@ -267,7 +268,7 @@ class ExcelHandler:
                     'ward_no': row_data.get('ward_no', ''),
                     'business_name': row_data.get('business_name', ''),
                     'business_address': row_data.get('business_address', ''),
-                    'job_name': row_data.get('job_name', ''),
+                    'job': row_data.get('job_name', ''),
                     'job_address': row_data.get('job_address', ''),
 
                 }

@@ -16,6 +16,7 @@ urlpatterns = [
 
     # Excel operations
     path('excel/template/', views.download_template, name='download_template'),
-    path('excel/import/', views.download_template, name='import_page'),
+    path('excel/import/', views.import_members, name='import_page'),
+    path('excel/export/', views.export_members, name='export_members'),
 
 ]
