@@ -1,106 +1,415 @@
 {% extends "base.html" %}
+{% load widget_tweaks %}
 
-{% block title %}Loan Application{% endblock title %}
+{% block title %}ऋण माग आवेदन - Loan Application{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .loan-section {
+        background: #f8f9fa;
+        border-left: 4px solid #1abc9c;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+    }
+    
+    .readonly-field {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+    }
+
+    .amount-preview {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock extra_css %}
 
 {% block content %}
 <div class="container">
     <!-- Member Header -->
-     <div class="card mb-3" style="background: linear-gradient(135deg, #34a1c3, #2c9faf);">
+    <div class="card mb-3" style="background:linear-gradient(135deg, #34a1c3, #2c9faf);">
         <div class="card-body text-white">
-            <h5><i class="bi bi-person-badge"></i> Member Information </h5>
-            <p class="mb-0">
-                <strong>Member Number:</strong> {{member.member_number}} |
-                <strong>Member Name:</strong> {{member.member_name}}
-            </p>
+            <h5><i class="bi bi-person-badge"></i> सदस्य विवरण (Member Information)</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">
+                        <strong> सदस्य नं (Member Number):</strong> {{member.member_number}}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-0">
+                        <strong> सदस्यको नाम (Name):</strong> {{member.member_name}}
+                    </p>
+                </div>
+            </div>
         </div>
-     </div>
-
-     <!-- Loan Form -->
-      <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0 nepali-text">
-                <i class="bi bi-cash-coin"></i> Loan Application (ऋण माग)
+    </div>
+    
+    <!-- Loan Application Form -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0 nepali-text"> 
+                <i class="bi bi-cash-coin"></i> ऋण माग (Loan Application)
             </h5>
         </div>
         <div class="card-body">
             <form method="post" id="loanForm">
                 {% csrf_token %}
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label nepali-text">Loan Type</label>
-                        <select name="loan_type" id="id_loan_type" class="form-select" required>
-                            <option value="">Select loan type</option>
-                            {% for scheme in loan_schemes %}
-                            <option value="{{ scheme.loan_type}}" data-rate="{{ scheme.interest_rate}}">
-                                {{scheme.loan_type}}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-class nepali-text"> Interest Rate</label>
-                        {{ form.interest_rate}}
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-class nepali-text">Loan Duration</label>
-                        {{form.loan_duration}}
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-class nepali-text">Repayment Duration</label>
-                        {{form.repayment_duration}}
-                    </div>
-
-                </div>
-
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-class nepali-text">Loan Completion Year(BS)</label>
-                        {{form.loan_completion_year}}
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-class nepali-text">Loan Completion Month</label>
-                        {{form.loan_completion_month}}
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-class nepali-text">Loan Completion Day</label>
-                        {{form.loan_completion_day}}
-                    </div>
+                <!-- Loan Type & Interest Rate -->
+                <div class="loan-section">
+                    <h6 class="nepali-text mb-3">
+                        <i class="bi bi-card-list"> ऋणको प्रकार (Loan Type)</i>
+                    </h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required-field nepali-text">
+                                 ऋण को प्रकार (Loan Type)
+                            </label>
+                            <select name="loan_type" id="id_loan_type" class="form-select" required>
+                                <option value="">Select Loan Type</option>
+                                {% for scheme in loan_schemes %}
+                                <option value="{{ scheme.loan_type }}"
+                                        data-rate="{{ scheme.interest_rate }}">
+                                        {{ scheme.loan_type }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.loan_type.errors %}
+                            <div class="text-danger mt-1">{{ form.loan_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label nepali-text">
+                                हालको ब्याजदर (Interest Rate %)
+                            </label>
+                            <input type="text"
+                                    name="interest_rate"
+                                    id="id_interest_rate"
+                                    class="form-control readonly-field"
+                                    readonly>
+                            <small class="text-muted">Auto-filled based on loan type</small>
+                            {% if form.interest_rate.errors %}
+                            <div class="text-danger mt-1">{{ form.interest_rate.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>                    
                 </div>
                 
-                <div class="d-flex gap-2 mt-4">
-                    <button class="btn btn-success" type="submit">
-                        <i class="bi bi-save"></i> Save & Continue
-                    </button>
-                    <a href="{% url 'members:member_detail' member.member_number %}" class="btn btn-secondary">
-                        <i class="bi bi-x-circle"></i> Cancel
-                    </a>
+                <!-- Duration & Repayment -->
+                <div class="loan-section">
+                    <h6 class="nepali-text mb-3">
+                        <i class="bi bi-calendar-range"></i> अवधि (Duration)
+                    </h6>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required-field nepali-text">
+                                ऋण अवधि (Loan Duration)
+                            </label>
+                            <select name="loan_duration" class="form-select" required>
+                                <option value="">Select Duration</option>
+                                <option value="अर्धवार्षिक">अर्धवार्षिक (6 months)</option>
+                                <option value="वार्षिक">वार्षिक (1 year)</option>
+                                <option value="२ वर्ष">२ वर्ष (2 year)</option>
+                                <option value="३ वर्ष">३ वर्ष (3 year)</option>
+                                <option value="४ वर्ष">४ वर्ष (4 year)</option>
+                                <option value="५ वर्ष">५ वर्ष (5 year)</option>
+                            </select>
+                            {% if form.loan_duration.errors %}
+                            <div class="text-danger mt-1">{{ form.loan_duration.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required-field nepali-text">
+                                भुक्तानी अवधि (Repayment Duration)
+                            </label>
+                            <select name="repayment_duration" class="form-select">
+                                <option value="">Select Repayment</option>
+                                <option value="मासिक">मासिक (Monthly)</option>
+                                <option value="त्रैमासिक">त्रैमासिक (Quarterly)</option>
+                                <option value="अर्धवार्षिक">अर्धवार्षिक (Half-yearly)</option>
+                            </select>
+                            {% if form.repayment_duration.errors %}
+                            <div class="text-danger mt-1">{{ form.repayment_duration.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loan Amount -->
+                <div class="loan-section">
+                    <h6 class="nepali-text mb-3">
+                        <i class="bi bi-currency-rupee"></i> ऋण माग रकम (Loan Amount)
+                    </h6>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required-field nepali-text">
+                                ऋण रकम (Loan Amount in Rs.)
+                            </label>
+                            <input type="number"
+                                    name="loan_amount"
+                                    id="id_loan_amount"
+                                    class="form-control"
+                                    placeholder="50000"
+                                    step="100"
+                                    min="0"
+                                    required>
+                            <small class="text-muted">Enter amount in numbers</small>
+                            {% if form.loan_amount.errors %}
+                            <div class="text-danger mt-1">{{ form.loan_amount.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label nepali-text">
+                                ऋण रकम - अक्षरमा (Amount in Words)
+                            </label>
+                            <input type="text"
+                                    name="loan_amount_in_words"
+                                    id="id_loan_amount_in_words"
+                                    class="form-control readonly-field nepali-text"
+                                    readonly>
+                            <small class="text-muted">Auto-converted to Nepali words</small>
+                            {% if form.loan_amount_in_words.errors %}
+                            <div class="text-danger mt-1">{{ form.loan_amount_in_words.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Amount Preview -->
+                    <div class="amount-preview text-center" id="amountPreview" style="display:none;">
+                        <h3 class="mb-0" id="previewAmount">रु. 0</h3>
+                        <p class="mb-0 mt-2 nepali-text" id="previewWords"></p>
+                    </div> 
+                </div>
+
+                <!-- Completion Date -->
+                <div class="loan-section">
+                    <h6 class="nepali-text mb-3">
+                        <i class="bi bi-calendar-check"></i> ऋण समापन मिति (Loan Completion Date BS)
+                    </h6>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label required-field nepali-text"> वर्ष (Year BS)</label>
+                            <input type="text"
+                                    name="loan_completion_year"
+                                    class="form-control"
+                                    placeholder="२०८१"
+                                    maxlength="4"
+                                    required>
+                            <small class="text-muted">BS format: २०८१</small>
+                            {% if form.loan_completion_year.errors %}
+                            <div class="text-danger mt-1">{{ form.loan_completion_year.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="" class="form-label required-field nepali-text">
+                                महिना (Month)
+                            </label>
+                            <select name="loan_completion_month" class="form-select" required>
+                                <option value="">Select Month</option>
+                                <option value="०१">बैशाख</option>
+                                <option value="०२">जेठ</option>
+                                <option value="०३">असार</option>
+                                <option value="०४">साउन</option>
+                                <option value="०५">भदौ</option>
+                                <option value="०६">असोज</option>
+                                <option value="०७">कार्तिक</option>
+                                <option value="०८">मंसिर</option>
+                                <option value="०९">पुष</option>
+                                <option value="१०">माघ</option>
+                                <option value="११">फागुन</option>
+                                <option value="१२">चैत</option>
+                            </select>
+                            {% if form.loan_completion_month.errors %}
+                            <div class="text-danger mt-1">{{ form.loan_completion_month.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="" class="form-label required-field nepali-text">
+                                दिन (Day)
+                            </label>
+                            <input type="text"
+                                    name="loan_completion_day"
+                                    class="form-control"
+                                    placeholder="१५"
+                                    maxlength="2"
+                                    required>
+                            <small class="text-muted">BS format: १५</small>
+                            {% if form.loan_completion_day.errors %}
+                            <div class="text-danger mt-1">{{ form.loan_completion_day.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!--Action Buttons-->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex gap-2 justify-content-between">
+                            <div>
+                                <a href="{% url 'members:member_detail' member.member_number %}" 
+                                    class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i>Back
+                                </a>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" 
+                                        class="btn btn-info"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#additionalFormsModal">
+                                    <i class="bi bi-plus-circle"></i> 
+                                    <span class="nepali-text">थप विवरण</span> (Additional)
+                                </button>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="bi bi-save"></i> 
+                                    <span class="nepali-text">सुरक्षित र अगाडि बढ्नुहोस्</span> (Save & Continue)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
-
-      </div>
+    </div>
 </div>
-{% endblock content %}
 
-{% block extra_js%}
+<!-- Additional Forms Modal -->
+<div class="modal fade" id="additionalFormsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title nepali-text">थप विवरण (Additional Details)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group">
+                    <a href="#" 
+                       class="list-group-item list-group-item-action">
+                        <i class="bi bi-person-check"></i> 
+                        <span class="nepali-text">साक्षी विवरण (Witness Details)</span>
+                    </a>
+                    <a href="#" 
+                       class="list-group-item list-group-item-action">
+                        <i class="bi bi-shield-check"></i> 
+                        <span class="nepali-text">जमानी विवरण (Guarantor Details)</span>
+                    </a>
+                    <a href="#" 
+                       class="list-group-item list-group-item-action">
+                        <i class="bi bi-file-text"></i> 
+                        <span class="nepali-text">मञ्जुरीनामा विवरण (Manjurinama)</span>
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-    $(document).ready(function(){
-        // auto fill interest rate when loan_type changes
-        $('#id_loan_type').change(function(){
-            var rate = $(this).find(':selected').data('rate');
-            $('#id_interest_rate').val(rate);
-        });
-
-        //convert amount to words (simplified - implement full conversion)
-        $('#id_loan_amount').on('input', function(){
-            var amount = $(this).val();
-            // add your number to Nepali words conversion header
-            $('#id_loan_amount_in_words').val('Amount in words: ' + amount);        
-        });
+$(document).ready(function() {
+    // Number to Nepali words conversion (simplified)
+    const nepaliNumbers = ['', 'एक', 'दुई', 'तीन', 'चार', 'पाँच', 'छ', 'सात', 'आठ', 'नौ'];
+    const nepaliTens = ['', '', 'बीस', 'तीस', 'चालीस', 'पचास', 'साठी', 'सत्तरी', 'अस्सी', 'नब्बे'];
+    const nepaliTeens = ['दश', 'एघार', 'बाह्र', 'तेह्र', 'चौध', 'पन्ध्र', 'सोह्र', 'सत्र', 'अठार', 'उन्नाइस'];
+    
+    function numberToNepaliWords(num) {
+        if (num === 0) return 'शून्य रुपैयाँ मात्र';
+        
+        let words = '';
+        
+        // Lakhs
+        if (num >= 100000) {
+            let lakhs = Math.floor(num / 100000);
+            words += convertTwoDigit(lakhs) + ' लाख ';
+            num %= 100000;
+        }
+        
+        // Thousands
+        if (num >= 1000) {
+            let thousands = Math.floor(num / 1000);
+            words += convertTwoDigit(thousands) + ' हजार ';
+            num %= 1000;
+        }
+        
+        // Hundreds
+        if (num >= 100) {
+            let hundreds = Math.floor(num / 100);
+            words += nepaliNumbers[hundreds] + ' सय ';
+            num %= 100;
+        }
+        
+        // Remaining
+        if (num > 0) {
+            words += convertTwoDigit(num) + ' ';
+        }
+        
+        return words.trim() + ' रुपैयाँ मात्र';
+    }
+    
+    function convertTwoDigit(num) {
+        if (num < 10) return nepaliNumbers[num];
+        if (num < 20) return nepaliTeens[num - 10];
+        
+        let tens = Math.floor(num / 10);
+        let ones = num % 10;
+        
+        return nepaliTens[tens] + (ones ? ' ' + nepaliNumbers[ones] : '');
+    }
+    
+    // Auto-fill interest rate on loan type change
+    $('#id_loan_type').on('change', function() {
+        const selectedOption = $(this).find(':selected');
+        const rate = selectedOption.data('rate');
+        $('#id_interest_rate').val(rate || '');
     });
+    
+    // Convert amount to words on input
+    $('#id_loan_amount').on('input', function() {
+        const amount = parseInt($(this).val()) || 0;
+        
+        if (amount > 0) {
+            const words = numberToNepaliWords(amount);
+            $('#id_loan_amount_in_words').val(words);
+            
+            // Show preview
+            $('#previewAmount').text('रु. ' + amount.toLocaleString('en-IN'));
+            $('#previewWords').text(words);
+            $('#amountPreview').fadeIn();
+        } else {
+            $('#id_loan_amount_in_words').val('');
+            $('#amountPreview').fadeOut();
+        }
+    });
+    
+    // Form validation before submit
+    $('#loanForm').on('submit', function(e) {
+        const loanType = $('#id_loan_type').val();
+        const loanAmount = $('#id_loan_amount').val();
+        const year = $('input[name="loan_completion_year"]').val();
+        
+        if (!loanType || !loanAmount || !year) {
+            e.preventDefault();
+            alert('कृपया सबै आवश्यक फिल्डहरू भर्नुहोस् (Please fill all required fields)');
+            return false;
+        }
+    });
+});
 </script>
 {% endblock %}
