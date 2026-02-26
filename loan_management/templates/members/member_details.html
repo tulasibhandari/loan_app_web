@@ -80,7 +80,7 @@
                 </div>
                 <div class="col-auto">
                     <div class="btn-group-vertical">
-                        <a href="#" 
+                        <a href="{% url 'members:member_edit' member.member_number %}" 
                             class="btn btn-light mb-2">
                             <i class="bi bi-pencil"></i>Edit
                         </a>
@@ -90,7 +90,7 @@
                         <a href="#" class="btn btn-warning mb-2">
                             <i class="bi bi-briefcase"></i>Projects
                         </a>
-                        <a href="#" class="btn btn-danger mb-2">
+                        <a href="{% url 'members:member_delete' member.member_number %}" class="btn btn-danger mb-2">
                             <i class="bi bi-trash"></i>Delete Member
                         </a>
                     </div>
