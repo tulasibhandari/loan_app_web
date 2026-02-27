@@ -3,8 +3,8 @@ from .models import LoanInfo, ApprovalInfo
 
 class LoanInfoForm(forms.ModelForm):
     class Meta:
-        model = ApprovalInfo
-        exclude = ['member', 'entered_by', 'entered_post']
+        model = LoanInfo
+        exclude = ['member', 'status', 'created_at']
         widgets = {
             'loan_type': forms.Select(attrs={'class': 'form-control', 'id':'id_loan_type'}),
             'interest_type': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),

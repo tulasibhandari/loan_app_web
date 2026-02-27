@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ loan.loan_type }} - Loan Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .loan-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px 10px 0 0;
+    }
+    
+    .info-card {
+        border-left: 4px solid #3498db;
+        background: #f8f9fa;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 6px;
+    }
+    
+    .info-row {
+        display: flex;
+        padding: 10px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        width: 250px;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .info-value {
+        flex: 1;
+        color: #212529;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-left: 40px;
+        padding-bottom: 30px;
+        border-left: 2px solid #e9ecef;
+    }
+    
+    .timeline-item:last-child {
+        border-left: 2px solid transparent;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -10px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #3498db;
+        border: 3px solid white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Loan Header -->
+    <div class="card mb-4">
+        <div class="loan-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3 class="mb-2 nepali-text">{{ loan.loan_type }}</h3>
+                    <p class="mb-1">
+                        <i class="bi bi-person"></i> 
+                        <strong>{{ loan.member.member_number }}</strong> - {{ loan.member.member_name }}
+                    </p>
+                    <p class="mb-0">
+                        <i class="bi bi-calendar"></i> Applied: {{ loan.created_at|date:"F d, Y" }}
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <h2 class="mb-2">रु. {{ loan.loan_amount }}</h2>
+                    <span class="status-badge status-{{ loan.status }}">
+                        {{ loan.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card-body bg-light">
+            <div class="d-flex gap-2 justify-content-center">
+                {% if loan.status == 'pending' and user.role == 'admin' %}
+                <a href="{% url 'loans:loan_approval' loan.id %}" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> Approve Loan
+                </a>
+                {% endif %}
+                <a href="{% url 'members:member_detail' loan.member.member_number %}" class="btn btn-info">
+                    <i class="bi bi-person"></i> View Member
+                </a>
+                <a href="{% url 'reports:report_center' %}" class="btn btn-warning">
+                    <i class="bi bi-file-text"></i> Generate Reports
+                </a>
+                <a href="{% url 'loans:loan_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-md-8">
+            <!-- Loan Details -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> 
+                        <span class="nepali-text">ऋण विवरण (Loan Details)</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <div class="info-label nepali-text">ऋणको प्रकार (Loan Type):</div>
+                        <div class="info-value nepali-text">
+                            <strong>{{ loan.loan_type }}</strong>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Interest Rate:</div>
+                        <div class="info-value">
+                            <span class="badge bg-info">{{ loan.interest_rate }}%</span>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">ऋण अवधि (Duration):</div>
+                        <div class="info-value nepali-text">{{ loan.loan_duration }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">भुक्तानी अवधि (Repayment):</div>
+                        <div class="info-value nepali-text">{{ loan.repayment_duration }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">ऋण रकम (Amount):</div>
+                        <div class="info-value">
+                            <strong class="text-success">रु. {{ loan.loan_amount }}</strong>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">रकम शब्दमा (In Words):</div>
+                        <div class="info-value nepali-text">{{ loan.loan_amount_in_words }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">समापन मिति (Completion Date):</div>
+                        <div class="info-value nepali-text">
+                            {{ loan.loan_completion_year }}-{{ loan.loan_completion_month }}-{{ loan.loan_completion_day }} BS
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Approval Information -->
+            {% if approval %}
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-check-circle"></i> 
+                        <span class="nepali-text">स्वीकृत विवरण (Approval Details)</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <div class="info-label nepali-text">स्वीकृत मिति (Approval Date):</div>
+                        <div class="info-value">{{ approval.approval_date }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">प्रविष्ट गर्ने (Entered By):</div>
+                        <div class="info-value">{{ approval.entered_by }} ({{ approval.entered_post }})</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">स्वीकृत गर्ने (Approved By):</div>
+                        <div class="info-value">{{ approval.approved_by }} ({{ approval.approved_post }})</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">स्वीकृत रकम (Approved Amount):</div>
+                        <div class="info-value">
+                            <strong class="text-success">रु. {{ approval.approved_loan_amount }}</strong>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label nepali-text">रकम शब्दमा:</div>
+                        <div class="info-value nepali-text">{{ approval.approved_loan_amount_words }}</div>
+                    </div>
+                    {% if approval.remarks %}
+                    <div class="info-row">
+                        <div class="info-label nepali-text">टिप्पणी (Remarks):</div>
+                        <div class="info-value">{{ approval.remarks }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Right Column -->
+        <div class="col-md-4">
+            <!-- Member Info -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-person-badge"></i> 
+                        <span class="nepali-text">सदस्य जानकारी</span>
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong class="nepali-text">{{ loan.member.member_name }}</strong>
+                    </p>
+                    <p class="mb-1 text-muted">
+                        <i class="bi bi-hash"></i> {{ loan.member.member_number }}
+                    </p>
+                    <p class="mb-1 text-muted">
+                        <i class="bi bi-telephone"></i> {{ loan.member.phone|default:"N/A" }}
+                    </p>
+                    <p class="mb-0 text-muted nepali-text">
+                        <i class="bi bi-geo-alt"></i> {{ loan.member.address|default:"N/A" }}
+                    </p>
+                    <a href="{% url 'members:member_detail' loan.member.member_number %}" 
+                       class="btn btn-sm btn-info w-100 mt-3">
+                        View Full Profile
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Status Timeline -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Status Timeline
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <small class="text-muted">{{ loan.created_at|date:"M d, Y" }}</small>
+                        <p class="mb-0"><strong>Application Submitted</strong></p>
+                    </div>
+                    
+                    {% if loan.status == 'approved' %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker" style="background: #28a745;"></div>
+                        <small class="text-muted">{{ approval.approval_date|default:"N/A" }}</small>
+                        <p class="mb-0"><strong>Loan Approved</strong></p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if loan.status == 'disbursed' %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker" style="background: #17a2b8;"></div>
+                        <small class="text-muted">-</small>
+                        <p class="mb-0"><strong>Amount Disbursed</strong></p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-graph-up"></i> Quick Stats
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Monthly EMI:</span>
+                        <strong>रु. -</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Total Interest:</span>
+                        <strong>रु. -</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Total Payable:</span>
+                        <strong class="text-success">रु. -</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -37,8 +37,42 @@ def loan_create(request, member_number):
 @login_required
 def loan_list(request):
     """List all loans"""
-    loans = LoanInfo.objects.select_related('member').all()
-    return render(request, 'loans/loan_list.html', {'loans': loans})
+    loans = LoanInfo.objects.select_related('member').all().order_by('-created_at')
+
+    # Filter by status if provided
+    status = request.GET.get('status')
+    if status:
+        loans = loans.filter(status=status)
+    
+    # Filter by member if provided
+    member_number = request.GET.get('member')
+    if member_number:
+        loans = loans.filter(member__number_number=member_number)
+    
+    context = {
+        'loans': loans,
+        'status_filter': status,
+    }
+    return render(request, 'loans/loan_list.html', context)
+
+@login_required
+def loan_detail(request, loan_id):
+    """View loan detail"""
+    loan = get_object_or_404(LoanInfo, id=loan_id)
+
+    # Get related data
+    try:
+        approval = ApprovalInfo.objects.filter(member=loan.member).first()
+    except:
+        approval = None
+    
+    context = {
+        'loan': loan,
+        'member': loan.member,
+        'approval': approval,
+    }
+
+    return render(request, 'loans/loan_detail.html', context)
 
 @login_required
 def loan_approval(request, loan_id):
@@ -69,4 +103,76 @@ def loan_approval(request, loan_id):
         'member': loan.member
     }
     return render(request, 'loans/loan_approval.html', context)
-# Create your views here.
+
+
+@login_required
+def loan_schemes_list(request):
+    """List all loan schemes"""
+    schemes = LoanScheme.objects.all().order_by('loan_type')
+
+    context = {
+        'schemes': schemes
+    }
+
+    return render(request, 'loans/loan_schemes.html', context)
+
+@login_required
+def scheme_create(request):
+    """Create new loan scheme"""
+    if request.method == 'POST':
+        loan_type = request.POST.get('loan_type')
+        interest_rate = request.POST.get('interest_type')
+
+        try:
+            # Check if already exists
+            if LoanScheme.objects.filter(loan_type=loan_type).exists():
+                messages.error(request, f'Loan scheme "{loan_type}" already exists.')
+            else:
+                LoanScheme.objets.create(
+                    loan_type=loan_type,
+                    interest_rate=float(interest_rate)
+                )
+                messages.success(request, f'Loan scheme "{loan_type}" created successfully.')
+        except Exception as e:
+            messages.error(request, f"Error Occured: {str(e)}")
+    
+    return redirect('loans:schemes_list')
+
+@login_required
+def scheme_edit(request, scheme_id):
+    """Edit loan scheme"""
+    scheme = get_object_or_404(LoanScheme, id=scheme_id)
+
+    if request.method == 'POST':
+        loan_type = request.POST.get('loan_type')
+        interest_rate = request.POST.get('interest_rate')
+
+        try:
+            # Check if loan_type changed and already exists
+            if loan_type != scheme.loan_type:
+                if LoanScheme.objects.filter(loan_type=loan_type).exists():
+                    messages.error(request, f'Loan type "{loan_type}" already exists.')
+                    return redirect('loans:schemes_list')
+                
+                scheme.loan_type = loan_type
+                scheme.interest_rate = float(interest_rate)
+                scheme.save()
+
+                messages.success(request, 'Loan scheme updated successfully.')
+        except Exception as e:
+            messages.error(request, f'Error occured: {str(e)}')
+
+    return redirect('loans:schemes_list')
+
+@login_required
+def scheme_delete(request, scheme_id):
+    """Delete loan scheme"""
+    scheme = get_object_or_404(LoanScheme, id=scheme_id)
+
+    if request.method == 'POST':
+        loan_type = scheme.loan_type
+        scheme.delete()
+        messages.success(request, f"Loan scheme '{loan_type}' deleted successfully.")
+
+    return redirect('loans:schemes_list')
+
