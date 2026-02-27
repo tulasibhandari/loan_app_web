@@ -128,7 +128,7 @@ def scheme_create(request):
             if LoanScheme.objects.filter(loan_type=loan_type).exists():
                 messages.error(request, f'Loan scheme "{loan_type}" already exists.')
             else:
-                LoanScheme.objets.create(
+                LoanScheme.objects.create(
                     loan_type=loan_type,
                     interest_rate=float(interest_rate)
                 )
