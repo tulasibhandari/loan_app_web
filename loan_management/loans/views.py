@@ -121,7 +121,12 @@ def scheme_create(request):
     """Create new loan scheme"""
     if request.method == 'POST':
         loan_type = request.POST.get('loan_type')
-        interest_rate = request.POST.get('interest_type')
+        interest_rate = request.POST.get('interest_rate')
+
+        # Validation
+        if not loan_type or not interest_rate:
+            messages.error(request, '❌ कृपया सबै फिल्ड भर्नुहोस् (Please fill all fields)')
+            return redirect('loans:schemes_list')
 
         try:
             # Check if already exists

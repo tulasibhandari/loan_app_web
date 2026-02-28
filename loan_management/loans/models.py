@@ -5,6 +5,7 @@ class LoanScheme(models.Model):
     """Loan schemes with interest rates"""
     loan_type = models.CharField(max_length=100, unique=True)
     interest_rate = models.FloatField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'loan_schemes'

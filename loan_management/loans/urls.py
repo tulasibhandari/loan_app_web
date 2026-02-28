@@ -13,7 +13,7 @@ urlpatterns = [
     # Loan Schemes
     path('schemes/', views.loan_schemes_list, name='schemes_list'),
     path('schemes/create/', views.scheme_create, name='scheme_create'),
-    path('schemes/<int:scheme_id>/edit', views.scheme_edit, name='scheme_edit'),
+    path('schemes/<int:scheme_id>/edit/', views.scheme_edit, name='scheme_edit'),
     path('schemes/<int:scheme_id>/delete/', views.scheme_delete, name='scheme_delete'),
 
     # Witness, Guarantor, Manjurinama (to be created)
