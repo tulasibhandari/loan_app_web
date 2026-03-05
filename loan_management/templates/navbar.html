@@ -1,4 +1,60 @@
-NAVBAR_HTML = """"
+<header class="navbar navbar-expand-md d-print-none">
+    <div class="container-xl">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <a class="navbar-brand d-none-navbar-horizontal pe-0 pe-md-3 text-white" href="{% url 'dashboard:home' %}">
+            <i class="ti ti-building-bank"></i>Loan Documentation System
+
+        </a>
+
+        
+        {% if user.is_authenticated %}
+        <div class="navbar-nav flex-row order-md-last">
+            <div class="nav-item dropdown">
+                <span class="nav-link d-flex lh-1 text-reset p-0">
+                    <div class="d-none d-xl-block ps-2">
+                        <div class="text-white">{{user.username}}</div>
+                        <div class="mt-1 small text-white">{{user.role|title}}</div>  
+                    </div>
+                </span>
+            </div>
+            <div class="nav-item">
+                <a href="{% url 'accounts:logout'%}" class="nav-link text-white">
+                    Logout
+                </a>
+            </div>
+        </div>
+            
+        {% endif %}
+            
+        
+    </div>
+</header>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} 
 
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class = "container-fluid">
@@ -18,5 +74,4 @@ NAVBAR_HTML = """"
         </div>
         {% endif %}
     </div>
-</nav>
-""""
+</nav>B {% endcomment %}

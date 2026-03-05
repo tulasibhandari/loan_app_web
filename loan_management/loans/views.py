@@ -69,4 +69,86 @@ def loan_approval(request, loan_id):
         'member': loan.member
     }
     return render(request, 'loans/loan_approval.html', context)
+<<<<<<< Updated upstream
 # Create your views here.
+=======
+
+
+@login_required
+def loan_schemes_list(request):
+    """List all loan schemes"""
+    schemes = LoanScheme.objects.all().order_by('loan_type')
+
+    context = {
+        'schemes': schemes
+    }
+
+    return render(request, 'loans/loan_schemes.html', context)
+
+@login_required
+def scheme_create(request):
+    """Create new loan scheme"""
+    if request.method == 'POST':
+        loan_type = request.POST.get('loan_type')
+        interest_rate = request.POST.get('interest_rate')
+        
+
+        # Validation
+        if not loan_type or not interest_rate:
+            messages.error(request, '❌ कृपया सबै फिल्ड भर्नुहोस् (Please fill all fields)')
+            return redirect('loans:schemes_list')
+
+        try:
+            # Check if already exists
+            if LoanScheme.objects.filter(loan_type=loan_type).exists():
+                messages.error(request, f'Loan scheme "{loan_type}" already exists.')
+            else:
+                LoanScheme.objects.create(
+                    loan_type=loan_type,
+                    interest_rate=float(interest_rate)
+                )
+                messages.success(request, f'Loan scheme "{loan_type}" created successfully.')
+        except Exception as e:
+            messages.error(request, f"Error Occured: {str(e)}")
+    
+    return redirect('loans:schemes_list')
+
+@login_required
+def scheme_edit(request, scheme_id):
+    """Edit loan scheme"""
+    scheme = get_object_or_404(LoanScheme, id=scheme_id)
+
+    if request.method == 'POST':
+        loan_type = request.POST.get('loan_type')
+        interest_rate = request.POST.get('interest_rate')
+
+        try:
+            # Check if loan_type changed and already exists
+            if loan_type != scheme.loan_type:
+                if LoanScheme.objects.filter(loan_type=loan_type).exists():
+                    messages.error(request, f'Loan type "{loan_type}" already exists.')
+                    return redirect('loans:schemes_list')
+                
+                scheme.loan_type = loan_type
+                scheme.interest_rate = float(interest_rate)
+                scheme.save()
+
+                messages.success(request, 'Loan scheme updated successfully.')
+        except Exception as e:
+            messages.error(request, f'Error occured: {str(e)}')
+
+    return redirect('loans:schemes_list')
+
+@login_required
+def scheme_delete(request, scheme_id):
+    """Delete loan scheme"""
+    scheme = get_object_or_404(LoanScheme, id=scheme_id)
+
+    if request.method == 'POST':
+        loan_type = scheme.loan_type
+        scheme.delete()
+        messages.success(request, f"Loan scheme '{loan_type}' deleted successfully.")
+
+    return redirect('loans:schemes_list')
+
+>>>>>>> Stashed changes
