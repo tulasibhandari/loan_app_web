@@ -1,0 +1,38 @@
+{% comment %}
+    Step progress bar for collateral forms.
+    Expects: step (int), total_steps (int), member
+{% endcomment %}
+
+{% with steps="1,2,3,4,5" %}
+<div class="step-progress mb-3">
+
+    {% for s in "12345" %}
+    {% with s_int=forloop.counter %}
+        
+    <div class="step-item
+        {% if step > s_int %}completed
+        {% elif step == s_int %}active
+        {% endif %}">
+
+        <div class="step-circle">
+            {% if step > s_int %}
+            <i class="bi bi-check-lg"></i>
+            {% else %}
+            {{ s_int }}
+            {% endif %}
+        </div>
+        
+        <span class="step-label">
+            {% if s_int == 1 %}बचत
+            {% elif s_int == 2 %}जग्गा धितो
+            {% elif s_int == 3 %}परिवार
+            {% elif s_int == 4 %}आय/व्यय
+            {% elif s_int == 5 %}संस्था
+            {% endif %}
+        </span>
+    </div>
+       
+    {% endwith %}
+    {% endfor %}
+</div>
+{% endwith %}

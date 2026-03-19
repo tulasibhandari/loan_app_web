@@ -1,0 +1,139 @@
+{% extends 'collateral/collateral_base.html' %}
+
+{% block collateral_content %}
+<div class="collateral-card">
+  <div class="card-header">
+    <i class="bi bi-house-door"></i>
+    <div>
+      <h5>जग्गा धितो विवरण</h5>
+      <small>धितो राखिएको सम्पत्तिको विवरण</small>
+    </div>
+  </div>
+  <div class="card-body">
+    <form method="post" novalidate id="property-form">
+      {% csrf_token %}
+      {{ formset.management_form }}
+
+      <div id="formset-container">
+        {% for form in formset %}
+        <div class="formset-row {% if form.DELETE.value %}marked-delete{% endif %}" id="row-{{ forloop.counter0 }}">
+          <span class="row-number nepali-text">जग्गा {{ forloop.counter }}</span>
+
+          <div class="d-flex justify-content-end mb-2">
+            {% if form.DELETE %}
+            <label class="btn-delete-row" title="Delete">
+              {{ form.DELETE }}
+              <i class="bi bi-trash3"></i>
+            </label>
+            {% endif %}
+          </div>
+
+          {{ form.id }}
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label nepali-text">जग्गाधनीको नाम</label>
+              {{ form.owner_name }}
+              {% if form.owner_name.errors %}<div class="text-danger" style="font-size:0.78rem;">{{ form.owner_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label nepali-text">बाबु/पतिको नाम</label>
+              {{ form.father_or_spouse_name }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label nepali-text">हजुरबाबु/ससुराको नाम</label>
+              {{ form.grandfather_or_father_inlaw_name }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label nepali-text">जिल्ला</label>
+              {{ form.district }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label nepali-text">नगरपालिका/गाउँपालिका</label>
+              {{ form.municipality_vdc }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label nepali-text">वडा नं.</label>
+              {{ form.ward_no }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label nepali-text">सिट नं.</label>
+              {{ form.sheet_no }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label nepali-text">कित्ता नं.</label>
+              {{ form.plot_no }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label nepali-text">क्षेत्रफल</label>
+              {{ form.area }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label nepali-text">जग्गाको किसिम</label>
+              {{ form.land_type }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="btn-add-row mt-2 nepali-text" id="add-row-btn">
+        <i class="bi bi-plus-circle"></i> अर्को जग्गा थप्नुहोस्
+      </button>
+
+      <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+        <a href="{% url 'collateral:basic_form' member.member_number %}" class="btn-collateral-back">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <button type="submit" class="btn-collateral-next">
+          Next <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Hide delete checkboxes
+  document.querySelectorAll('input[type=checkbox][id$="-DELETE"]').forEach(cb => cb.style.display = 'none');
+
+  // Toggle delete
+  document.querySelectorAll('.btn-delete-row').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const row = this.closest('.formset-row');
+      const cb  = row.querySelector('input[type=checkbox][id$="-DELETE"]');
+      if (cb) { cb.checked = !cb.checked; row.classList.toggle('marked-delete', cb.checked); }
+    });
+  });
+
+  // Add row
+  document.getElementById('add-row-btn').addEventListener('click', function() {
+    const container  = document.getElementById('formset-container');
+    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+    const count      = parseInt(totalForms.value);
+    const rows       = container.querySelectorAll('.formset-row');
+    if (!rows.length) return;
+
+    const newRow = rows[rows.length - 1].cloneNode(true);
+    newRow.id    = 'row-' + count;
+    newRow.classList.remove('marked-delete');
+    newRow.innerHTML = newRow.innerHTML.replace(/form-(\d+)-/g, `form-${count}-`);
+    newRow.querySelector('.row-number').textContent = 'जग्गा ' + (count + 1);
+
+    newRow.querySelectorAll('input[type=text]').forEach(i => i.value = '');
+    newRow.querySelectorAll('input[type=hidden]:not([name$="-id"])').forEach(i => i.value = '');
+    newRow.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = false; cb.style.display = 'none'; });
+
+    newRow.querySelectorAll('.btn-delete-row').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const row = this.closest('.formset-row');
+        const cb  = row.querySelector('input[type=checkbox][id$="-DELETE"]');
+        if (cb) { cb.checked = !cb.checked; row.classList.toggle('marked-delete', cb.checked); }
+      });
+    });
+
+    container.appendChild(newRow);
+    totalForms.value = count + 1;
+  });
+</script>
+{% endblock %}

@@ -16,8 +16,8 @@ urlpatterns = [
     path('schemes/<int:scheme_id>/edit/', views.scheme_edit, name='scheme_edit'),
     path('schemes/<int:scheme_id>/delete/', views.scheme_delete, name='scheme_delete'),
 
-    # Witness, Guarantor, Manjurinama (to be created)
-    # path('witness/<str:member_number>/', views.witness_form, name='witness_form'),
-    # path('guarantor/<str:member_number>/', views.guarantor_form, name='guarantor_form'),
-    # path('manjurinama/<str:member_number>/', views.manjurinama_form, name='manjurinama_form'),
+    # Witness, Guarantor, Manjurinama (Supporting Documents)
+    path('witness/<str:member_number>/', views.witness_form, name='witness_form'),
+    path('guarantor/<str:member_number>/', views.guarantor_form, name='guarantor_form'),
+    path('manjurinama/<str:member_number>/', views.manjurinama_form, name='manjurinama_form'),
 ]

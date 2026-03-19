@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}धितो सारांश - {{ member.member_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .overview-header {
+    background: linear-gradient(135deg, var(--primary-color), #2980b9);
+    color: #fff;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .overview-header h5 { margin: 0; font-weight: 600; }
+  .overview-header small { opacity: 0.85; font-size: 0.8rem; }
+
+  .section-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+    border: 1px solid var(--border-color);
+    margin-bottom: 1.1rem;
+    overflow: hidden;
+  }
+  .section-card .sc-header {
+    background: var(--light-bg);
+    border-bottom: 2px solid var(--border-color);
+    padding: 0.65rem 1.1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .section-card .sc-header h6 {
+    margin: 0; font-weight: 600; color: var(--dark-color); font-size: 0.9rem;
+  }
+  .section-card .sc-body { padding: 1rem 1.1rem; }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+  }
+  .info-item label {
+    font-size: 0.7rem; color: #6c757d; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.03em;
+    display: block; margin-bottom: 2px;
+  }
+  .info-item span { font-size: 0.88rem; color: var(--dark-color); font-weight: 500; }
+
+  .stat-box {
+    background: var(--light-bg);
+    border: 1.5px solid var(--border-color);
+    border-radius: 8px; padding: 0.65rem 1rem; text-align: center;
+  }
+  .stat-box .val { font-size: 1.05rem; font-weight: 700; }
+  .stat-box .lbl { font-size: 0.7rem; color: #6c757d; font-weight: 500; }
+
+  .badge-income  { background: #d4edda; color: #155724; border-radius: 4px; padding: 1px 7px; font-size: 0.74rem; font-weight: 600; }
+  .badge-expense { background: #f8d7da; color: #721c24; border-radius: 4px; padding: 1px 7px; font-size: 0.74rem; font-weight: 600; }
+
+  .edit-link {
+    font-size: 0.76rem; color: var(--primary-color);
+    text-decoration: none; margin-left: auto;
+    display: inline-flex; align-items: center; gap: 3px;
+  }
+  .edit-link:hover { text-decoration: underline; }
+  .empty-note { font-size: 0.82rem; color: #adb5bd; font-style: italic; }
+  .table-sm td, .table-sm th { font-size: 0.82rem; padding: 0.38rem 0.6rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-2">
+
+  <!-- Breadcrumb -->
+  <nav style="font-size:0.82rem; color:#6c757d;" class="mb-2">
+    <a href="{% url 'members:member_list' %}" style="color:var(--primary-color);">Members</a> /
+    <a href="{% url 'members:member_detail' member.member_number %}" style="color:var(--primary-color);">{{ member.member_name }}</a> /
+    <span class="nepali-text">धितो सारांश</span>
+  </nav>
+
+  <!-- Header -->
+  <div class="overview-header">
+    <div>
+      <h5><i class="bi bi-shield-check me-2"></i><span class="nepali-text">धितो सारांश</span></h5>
+      <small>{{ member.member_name }} | {{ member.member_number }}</small>
+    </div>
+    <a href="{% url 'collateral:basic_form' member.member_number %}" class="btn btn-light btn-sm fw-semibold">
+      <i class="bi bi-pencil me-1"></i>Edit
+    </a>
+  </div>
+
+  <div class="row g-3">
+
+    <!-- Basic -->
+    <div class="col-12">
+      <div class="section-card">
+        <div class="sc-header">
+          <i class="bi bi-piggy-bank" style="color:var(--primary-color);"></i>
+          <h6 class="nepali-text">आधारभूत धितो</h6>
+          <a href="{% url 'collateral:basic_form' member.member_number %}" class="edit-link"><i class="bi bi-pencil-square"></i>Edit</a>
+        </div>
+        <div class="sc-body">
+          {% if basic %}
+          <div class="info-grid">
+            <div class="info-item"><label class="nepali-text">मासिक बचत</label><span>Rs. {{ basic.monthly_saving }}</span></div>
+            <div class="info-item"><label class="nepali-text">बाल बचत</label><span>Rs. {{ basic.child_saving }}</span></div>
+            <div class="info-item"><label class="nepali-text">जम्मा बचत</label><span>Rs. {{ basic.total_saving }}</span></div>
+            <div class="info-item"><label class="nepali-text">शेयर रकम</label><span>Rs. {{ basic.share_amount }}</span></div>
+          </div>
+          {% else %}
+          <span class="empty-note nepali-text">जानकारी भरिएको छैन।</span>
+          <a href="{% url 'collateral:basic_form' member.member_number %}" class="btn btn-sm btn-outline-primary ms-3">
+            <i class="bi bi-plus-circle me-1"></i>Add
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Properties -->
+    <div class="col-12">
+      <div class="section-card">
+        <div class="sc-header">
+          <i class="bi bi-house-door" style="color:var(--primary-color);"></i>
+          <h6 class="nepali-text">जग्गा धितो विवरण</h6>
+          <a href="{% url 'collateral:property_form' member.member_number %}" class="edit-link"><i class="bi bi-pencil-square"></i>Edit</a>
+        </div>
+        <div class="sc-body">
+          {% if properties %}
+          <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="nepali-text">जग्गाधनी</th>
+                  <th class="nepali-text">जिल्ला</th>
+                  <th class="nepali-text">नगरपालिका</th>
+                  <th class="nepali-text">वडा</th>
+                  <th class="nepali-text">कित्ता नं.</th>
+                  <th class="nepali-text">क्षेत्रफल</th>
+                  <th class="nepali-text">किसिम</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in properties %}
+                <tr>
+                  <td>{{ p.owner_name }}</td>
+                  <td>{{ p.district }}</td>
+                  <td>{{ p.municipality_vdc }}</td>
+                  <td>{{ p.ward_no }}</td>
+                  <td>{{ p.plot_no }}</td>
+                  <td>{{ p.area }}</td>
+                  <td>{{ p.land_type }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <span class="empty-note nepali-text">जग्गा धितो भरिएको छैन।</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Family + Income side by side -->
+    <div class="col-md-6">
+      <div class="section-card h-100">
+        <div class="sc-header">
+          <i class="bi bi-people" style="color:var(--primary-color);"></i>
+          <h6 class="nepali-text">परिवार विवरण</h6>
+          <a href="{% url 'collateral:family_form' member.member_number %}" class="edit-link"><i class="bi bi-pencil-square"></i></a>
+        </div>
+        <div class="sc-body">
+          {% if family %}
+          <table class="table table-sm mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="nepali-text">नाम</th>
+                <th class="nepali-text">नाता</th>
+                <th class="nepali-text">पेशा</th>
+                <th class="nepali-text">मासिक आय</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for f in family %}
+              <tr>
+                <td>{{ f.name }}</td>
+                <td>{{ f.relation }}</td>
+                <td>{{ f.occupation }}</td>
+                <td>Rs. {{ f.monthly_income }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <span class="empty-note nepali-text">परिवार विवरण भरिएको छैन।</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="section-card h-100">
+        <div class="sc-header">
+          <i class="bi bi-bar-chart-line" style="color:var(--primary-color);"></i>
+          <h6 class="nepali-text">आय/व्यय सारांश</h6>
+          <a href="{% url 'collateral:income_expense_form' member.member_number %}" class="edit-link"><i class="bi bi-pencil-square"></i></a>
+        </div>
+        <div class="sc-body">
+          {% if income or expense %}
+          <div class="row g-2 mb-3">
+            <div class="col-4">
+              <div class="stat-box">
+                <div class="val text-success">Rs. {{ total_income|floatformat:0 }}</div>
+                <div class="lbl nepali-text">जम्मा आय</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="stat-box">
+                <div class="val text-danger">Rs. {{ total_expense|floatformat:0 }}</div>
+                <div class="lbl nepali-text">जम्मा व्यय</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="stat-box">
+                <div class="val {% if net_income >= 0 %}text-success{% else %}text-danger{% endif %}">
+                  Rs. {{ net_income|floatformat:0 }}
+                </div>
+                <div class="lbl nepali-text">खुद आय</div>
+              </div>
+            </div>
+          </div>
+          <table class="table table-sm mb-0">
+            <tbody>
+              {% for i in income %}
+              <tr><td>{{ i.field }}</td><td><span class="badge-income nepali-text">आय</span></td><td class="text-end">Rs. {{ i.amount }}</td></tr>
+              {% endfor %}
+              {% for e in expense %}
+              <tr><td>{{ e.field }}</td><td><span class="badge-expense nepali-text">व्यय</span></td><td class="text-end">Rs. {{ e.amount }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <span class="empty-note nepali-text">आय/व्यय विवरण भरिएको छैन।</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Affiliations -->
+    <div class="col-12">
+      <div class="section-card">
+        <div class="sc-header">
+          <i class="bi bi-building" style="color:var(--primary-color);"></i>
+          <h6 class="nepali-text">संस्था सम्बन्ध</h6>
+          <a href="{% url 'collateral:affiliation_form' member.member_number %}" class="edit-link"><i class="bi bi-pencil-square"></i>Edit</a>
+        </div>
+        <div class="sc-body">
+          {% if affiliations %}
+          <table class="table table-sm mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="nepali-text">संस्था</th>
+                <th class="nepali-text">ठेगाना</th>
+                <th class="nepali-text">पद</th>
+                <th class="nepali-text">अनुमानित आय</th>
+                <th class="nepali-text">कैफियत</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in affiliations %}
+              <tr>
+                <td>{{ a.institution }}</td>
+                <td>{{ a.address_of_institution }}</td>
+                <td>{{ a.position }}</td>
+                <td>Rs. {{ a.estimated_income }}</td>
+                <td>{{ a.remarks|default:"—" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <span class="empty-note nepali-text">संस्था सम्बन्ध भरिएको छैन।</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end mt-2 pb-3">
+    <a href="{% url 'members:member_detail' member.member_number %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Back to Member
+    </a>
+  </div>
+
+</div>
+{% endblock %}

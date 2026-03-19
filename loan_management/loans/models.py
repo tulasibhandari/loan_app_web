@@ -51,7 +51,7 @@ class ApprovalInfo(models.Model):
     entered_by = models.CharField(max_length=200)
     entered_post = models.CharField(max_length=100)
     approved_by = models.CharField(max_length=200)
-    approver_post = models.CharField(max_length=100)
+    approved_post = models.CharField(max_length=100)
     remarks = models.TextField(max_length=50)
     approved_loan_amount = models.CharField(max_length=50)
     approved_loan_amount_words = models.TextField()

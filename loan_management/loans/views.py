@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import LoanInfo, LoanScheme, ApprovalInfo
-from .forms import LoanInfoForm, ApprovalForm
+from .models import (LoanInfo, LoanScheme, ApprovalInfo,
+                     WitnessInfo, GuarantorDetails, ManjurinamaDetails)
+from .forms import LoanInfoForm, ApprovalForm, WitnessInfoForm, GuarantorForm, ManjurinamaForm
 from members.models import Member
+from collateral.models import (CollateralBasic, CollateralProperty,
+                               CollateralFamilyDetail, CollateralIncomeExpense,
+                               CollateralAffiliation)
 
 @login_required
 def loan_create(request, member_number):
@@ -23,7 +27,7 @@ def loan_create(request, member_number):
             request.session['current_loan_id'] = loan.id
             request.session['member_number'] = member_number
 
-            return redirect('collateral:basic_form', member_number=member_number)
+            return redirect('loans:witness_form', member_number=member_number)
     else:
         form = LoanInfoForm()
 
@@ -59,48 +63,100 @@ def loan_list(request):
 def loan_detail(request, loan_id):
     """View loan detail"""
     loan = get_object_or_404(LoanInfo, id=loan_id)
+    
 
     # Get related data
     try:
         approval = ApprovalInfo.objects.filter(member=loan.member).first()
     except:
         approval = None
-    
+        
+    # Collateral data
+    collateral_basic = CollateralBasic.objects.filter(member=loan.member).first()
+    collateral_properties = CollateralProperty.objects.filter(member=loan.member)
+    collateral_family = CollateralFamilyDetail.objects.filter(member=loan.member)
+    collateral_income = CollateralIncomeExpense.objects.filter(member=loan.member, type="income")
+    collateral_expense = CollateralIncomeExpense.objects.filter(member=loan.member, type="expense")
+    collateral_affiliations = CollateralAffiliation.objects.filter(member=loan.member)
+
+    total_income = sum(float(i.amount or 0) for i in collateral_income)
+    total_expense = sum(float(e.amount or 0) for e in collateral_expense)
+
     context = {
         'loan': loan,
         'member': loan.member,
         'approval': approval,
+        # Collateral
+        'collateral_basic':collateral_basic,
+        'collateral_properties': collateral_properties,
+        'collateral_family': collateral_family,
+        'collateral_affiliations': collateral_affiliations,
+        'collateral_income': collateral_income,
+        'collateral_expense': collateral_expense,
+        'total_income': total_income,
+        'total_expense': total_expense,
+        'net_income': total_income - total_expense,        
     }
 
     return render(request, 'loans/loan_detail.html', context)
 
 @login_required
 def loan_approval(request, loan_id):
-    """ Approve a loan"""
+    """Approve a loan"""
     loan = get_object_or_404(LoanInfo, id=loan_id)
-
+    
+    # ✨ NEW: Check if already approved
+    if loan.status == 'approved':
+        messages.warning(request, '⚠️ This loan is already approved')
+        return redirect('loans:loan_detail', loan_id=loan_id)
+    
     if request.method == 'POST':
-        form = ApprovalForm(request.POST)
-        if form.is_valid():
-            approval = form.save(commit=False)
-            approval.member = loan.member
-            approval.entered_by = request.user.full_name_nepali or request.user.username
-            approval.entered_post = request.user.post or 'Officer'
-            approval.save()
-
+        # ✨ NEW: Direct form data extraction (no Django form)
+        approval_data = {
+            'approval_date': request.POST.get('approval_date'),
+            'entered_by': request.user.full_name_nepali or request.user.username,
+            'entered_post': request.user.post or 'Officer',
+            'approved_by': request.POST.get('approved_by'),
+            'approved_post': request.POST.get('approved_post'),
+            'approved_loan_amount': request.POST.get('approved_loan_amount'),
+            'approved_loan_amount_words': request.POST.get('approved_loan_amount_words'),
+            'remarks': request.POST.get('remarks', ''),
+        }
+        
+        # ✨ NEW: Manual validation
+        if not all([approval_data['approval_date'], approval_data['approved_by'], 
+                   approval_data['approved_post'], approval_data['approved_loan_amount']]):
+            messages.error(request, '❌ कृपया सबै आवश्यक फिल्डहरू भर्नुहोस् (Please fill all required fields)')
+            return redirect('loans:loan_approval', loan_id=loan_id)
+        
+        try:
+            # ✨ NEW: Create approval with unpacked data
+            ApprovalInfo.objects.create(
+                member=loan.member,
+                **approval_data
+            )
+            
             # Update loan status
             loan.status = 'approved'
             loan.save()
-
-            messages.success(request, 'Loan approved successfully')
-            return redirect('loans:loan_list')
-    else:
-        form = ApprovalForm()
-
+            
+            # ✨ NEW: Better success message with amount
+            messages.success(
+                request, 
+                f'✅ ऋण सफलतापूर्वक स्वीकृत भयो (Loan approved successfully) - रु. {approval_data["approved_loan_amount"]}'
+            )
+            # ✨ NEW: Redirect to loan detail instead of list
+            return redirect('loans:loan_detail', loan_id=loan_id)
+            
+        except Exception as e:
+            messages.error(request, f'❌ Error approving loan: {str(e)}')
+            return redirect('loans:loan_approval', loan_id=loan_id)
+    
+    # ✨ NEW: Simpler context (no form object)
     context = {
-        'form': form, 
         'loan': loan,
-        'member': loan.member
+        'member': loan.member,
+        'user': request.user
     }
     return render(request, 'loans/loan_approval.html', context)
 
@@ -181,3 +237,99 @@ def scheme_delete(request, scheme_id):
 
     return redirect('loans:schemes_list')
 
+@login_required
+def witness_form(request, member_number):
+    """ Witness information form"""
+    member = get_object_or_404(Member, member_number=member_number)
+
+    # Get current loan from session
+    loan_id = request.session.get('current_loan_id')
+    loan = LoanInfo.objects.filter(id=loan_id, member=member).first() if loan_id else None
+
+    if request.method == 'POST':
+        form = WitnessInfoForm(request.POST)
+        if form.is_valid():
+            witness = form.save(commit=False)
+            witness.member = member
+            witness.save()
+            messages.success(request, 'साक्षी जानकारी सफलतापूर्वक रेकर्ड भयो।')
+            return redirect('loans:guarantor_form', member_number=member_number)
+    else:
+        form = WitnessInfoForm()
+
+    context = {
+        'form': form,
+        'member': member,
+        'loan': loan,
+        'step': 'witness',
+        'next_step': 'guarantor'
+    }
+
+    return render(request, 'loans/supporting_docs.html', context)
+
+@login_required
+def guarantor_form(request, member_number):
+    """Guarantor information form"""
+    member = get_object_or_404(Member, member_number=member_number)
+    loan_id = request.session.get('current_loan_id')
+    loan = LoanInfo.objects.filter(id=loan_id, member=member).first() if loan_id else None
+
+    if request.method == 'POST':
+        form = GuarantorForm(request.POST)
+        if form.is_valid():
+            guarantor = form.save(commit=False)
+            guarantor.member = member
+            guarantor.save()
+            messages.success(request, 'जमानी विवरण सफलतापूर्वक रेकर्ड भयो।')
+            return redirect('loans:manjurinama_form', member_number=member_number)
+    else:
+        form = GuarantorForm()
+
+    context = {
+        'form': form,
+        'member': member,
+        'loan': loan,
+        'step': 'guarantor',
+        'prev_step': 'witness',
+        'next_step': 'manjurinama',
+        'member_number': member_number
+    }
+
+    return render(request, 'loans/supporting_docs.html', context)
+
+@login_required
+def manjurinama_form(request, member_number):
+    """Manjurinama details form"""
+    member = get_object_or_404(Member, member_number=member_number)
+    loan_id = request.session.get('current_loan_id')
+    loan = LoanInfo.objects.filter(member=member, status__in=['pending', 'draft']).last() 
+
+    if request.method == 'POST':
+        form = ManjurinamaForm(request.POST)
+        if form.is_valid():
+            manjuri = form.save(commit=False)
+            manjuri.member = member
+            manjuri.save()
+            messages.success(request, 'मञ्जुरीनामा दिनेको विवरण सफलतापूर्वक रेकर्ड भयो।')
+
+            if loan:
+            # Clear session
+                if 'current_loan_id' in request.session:
+                    del request.session['current_loan_id']
+                return redirect('loans:loan_detail', loan_id=loan.id)
+            else:
+                messages.warning(request, '⚠️ Loan not found. Please create loan first.')
+                return redirect('loans:loan_list')
+    else:
+        form = ManjurinamaForm()
+
+    context = {
+        'form': form,
+        'member': member,
+        'loan': loan,
+        'step': 'manjurinama',
+        'prev_step': 'guarantor',
+        'member_number': member_number
+    }
+
+    return render(request, 'loans/supporting_docs.html', context)

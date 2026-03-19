@@ -1,4 +1,4 @@
-SIDEBAR_HTML = """
+
 <nav class="nav flex-column">
     <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
        href="{% url 'dashboard:home' %}">
@@ -14,7 +14,8 @@ SIDEBAR_HTML = """
        href="{% url 'loans:loan_list' %}">
         <i class="bi bi-cash-coin"></i> Loans
     </a>
-    
+
+      
     <a class="nav-link {% if 'reports' in request.path %}active{% endif %}" 
        href="{% url 'reports:report_center' %}">
         <i class="bi bi-file-earmark-text"></i> Reports
@@ -55,10 +56,3 @@ SIDEBAR_HTML = """
         </ul>
     </div>
 </nav>
-"""
-
-
-
-
-
-"""

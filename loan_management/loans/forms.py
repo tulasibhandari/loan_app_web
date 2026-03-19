@@ -1,5 +1,5 @@
 from django import forms
-from .models import LoanInfo, ApprovalInfo
+from .models import LoanInfo, ApprovalInfo, WitnessInfo, GuarantorDetails, ManjurinamaDetails
 
 class LoanInfoForm(forms.ModelForm):
     class Meta:
@@ -27,3 +27,52 @@ class ApprovalForm(forms.ModelForm):
             'remarks': forms.Textarea(attrs={'class': 'form-control', 'rows':3})
         }
 
+
+def _text(placeholder=''):
+    return forms.TextInput(attrs={'class': 'form-control', 'placeholder': placeholder})
+
+
+class WitnessInfoForm(forms.ModelForm):
+    class Meta:
+        model = WitnessInfo
+        exclude = ['member']
+        widgets = {
+            'name': _text('साक्षीको नाम'),
+            'relation': _text('ऋणीसँगको नाता'),
+            'address': _text('साक्षीको ठेगाना'),
+            'tole': _text('टोल'),
+            'ward': _text('वडा नं'),
+            'age': _text('साक्षीको उमेर'),
+        }
+
+class GuarantorForm(forms.ModelForm):
+    class Meta:
+        model = GuarantorDetails
+        exclude = ['member']
+        widgets = {
+            'guarantor_member_number':_text('जमानीको स.नं.'),
+            'guarantor_name':_text('जमानीको नाम'),
+            'guarantor_address':_text('ठेगाना'),
+            'guarantor_ward':_text('वडा नं.'),
+            'guarantor_phone':_text('सम्पर्क नं'),
+            'guarantor_citizenship':_text('नागरिकता नं'),
+            'guarantor_grandfather':_text('हजुरबुवाको नाम'),
+            'guarantor_father':_text('बाबुको नाम'),
+            'guarantor_citizenship_issue_district':_text('ना.प्र.प जारी जिल्ला'),
+            'guarantor_age':_text('उमेर'),
+        }
+
+class ManjurinamaForm(forms.ModelForm):
+    class Meta:
+        model = ManjurinamaDetails
+        exclude = ['member']
+        widgets = {
+            'person_name': _text('मञ्जुरीनामा दिनेको नामथर'), 
+            'grandfather_name': _text('हजुरबुवाको नाम'), 
+            'father_name': _text('बाबुको नाम'), 
+            'age': _text('उमेर'), 
+            'district': _text('जिल्ला'), 
+            'municipality': _text('नगर/गाउँ पालिका'), 
+            'wada_no': _text('वडा नं.'), 
+            'tole': _text('टोल'), 
+        }

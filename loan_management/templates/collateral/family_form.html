@@ -1,0 +1,119 @@
+{% extends 'collateral/collateral_base.html' %}
+
+{% block collateral_content %}
+<div class="collateral-card">
+  <div class="card-header">
+    <i class="bi bi-people"></i>
+    <div>
+      <h5>परिवार विवरण</h5>
+      <small>परिवारका सदस्यहरूको जानकारी</small>
+    </div>
+  </div>
+  <div class="card-body">
+    <form method="post" novalidate id="family-form">
+      {% csrf_token %}
+      {{ formset.management_form }}
+
+      <div id="formset-container">
+        {% for form in formset %}
+        <div class="formset-row {% if form.DELETE.value %}marked-delete{% endif %}" id="row-{{ forloop.counter0 }}">
+          <span class="row-number nepali-text">सदस्य {{ forloop.counter }}</span>
+
+          <div class="d-flex justify-content-end mb-2">
+            {% if form.DELETE %}
+            <label class="btn-delete-row" title="Delete">
+              {{ form.DELETE }}
+              <i class="bi bi-trash3"></i>
+            </label>
+            {% endif %}
+          </div>
+
+          {{ form.id }}
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label nepali-text">नाम</label>
+              {{ form.name }}
+              {% if form.name.errors %}<div class="text-danger" style="font-size:0.78rem;">{{ form.name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label nepali-text">उमेर</label>
+              {{ form.age }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label nepali-text">नाता</label>
+              {{ form.relation }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label nepali-text">पेशा</label>
+              {{ form.occupation }}
+            </div>
+            <div class="col-md-5">
+              <label class="form-label nepali-text">अन्य संस्थाको सदस्य</label>
+              {{ form.member_of_other_coop }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label nepali-text">मासिक आय (रु.)</label>
+              {{ form.monthly_income }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="btn-add-row mt-2 nepali-text" id="add-row-btn">
+        <i class="bi bi-plus-circle"></i> अर्को सदस्य थप्नुहोस्
+      </button>
+
+      <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+        <a href="{% url 'collateral:property_form' member.member_number %}" class="btn-collateral-back">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <button type="submit" class="btn-collateral-next">
+          Next <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('input[type=checkbox][id$="-DELETE"]').forEach(cb => cb.style.display = 'none');
+
+  document.querySelectorAll('.btn-delete-row').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const row = this.closest('.formset-row');
+      const cb  = row.querySelector('input[type=checkbox][id$="-DELETE"]');
+      if (cb) { cb.checked = !cb.checked; row.classList.toggle('marked-delete', cb.checked); }
+    });
+  });
+
+  document.getElementById('add-row-btn').addEventListener('click', function() {
+    const container  = document.getElementById('formset-container');
+    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+    const count      = parseInt(totalForms.value);
+    const rows       = container.querySelectorAll('.formset-row');
+    if (!rows.length) return;
+
+    const newRow = rows[rows.length - 1].cloneNode(true);
+    newRow.id    = 'row-' + count;
+    newRow.classList.remove('marked-delete');
+    newRow.innerHTML = newRow.innerHTML.replace(/form-(\d+)-/g, `form-${count}-`);
+    newRow.querySelector('.row-number').textContent = 'सदस्य ' + (count + 1);
+
+    newRow.querySelectorAll('input[type=text]').forEach(i => i.value = '');
+    newRow.querySelectorAll('input[type=hidden]:not([name$="-id"])').forEach(i => i.value = '');
+    newRow.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = false; cb.style.display = 'none'; });
+    newRow.querySelectorAll('.btn-delete-row').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const row = this.closest('.formset-row');
+        const cb  = row.querySelector('input[type=checkbox][id$="-DELETE"]');
+        if (cb) { cb.checked = !cb.checked; row.classList.toggle('marked-delete', cb.checked); }
+      });
+    });
+
+    container.appendChild(newRow);
+    totalForms.value = count + 1;
+  });
+</script>
+{% endblock %}

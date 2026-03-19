@@ -1,0 +1,105 @@
+{% extends 'collateral/collateral_base.html' %}
+
+{% block collateral_content %}
+<div class="collateral-card">
+  <div class="card-header">
+    <i class="bi bi-piggy-bank"></i>
+    <div>
+      <h5>आधारभूत धितो जानकारी</h5>
+      <small>बचत तथा शेयर विवरण</small>
+    </div>
+  </div>
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label nepali-text">{{ form.monthly_saving.label }} <span class="text-danger">*</span></label>
+          {{ form.monthly_saving }}
+          {% if form.monthly_saving.errors %}
+            <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.monthly_saving.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label nepali-text">{{ form.child_saving.label }}</label>
+          {{ form.child_saving }}
+          {% if form.child_saving.errors %}
+            <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.child_saving.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label nepali-text">{{ form.total_saving.label }}</label>
+          {{ form.total_saving }}
+          <small class="text-muted" style="font-size:0.74rem;">मासिक + बाल बचतको जोड</small>
+          {% if form.total_saving.errors %}
+            <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.total_saving.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label nepali-text">{{ form.share_amount.label }}</label>
+          {{ form.share_amount }}
+          {% if form.share_amount.errors %}
+            <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.share_amount.errors.0 }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Live Summary -->
+      <div class="summary-box mt-4">
+        <div class="row text-center g-0">
+          <div class="col-4 border-end">
+            <div class="lbl nepali-text mb-1">मासिक बचत</div>
+            <div class="val text-primary" id="preview-monthly">—</div>
+          </div>
+          <div class="col-4 border-end">
+            <div class="lbl nepali-text mb-1">शेयर रकम</div>
+            <div class="val text-warning" id="preview-share">—</div>
+          </div>
+          <div class="col-4">
+            <div class="lbl nepali-text mb-1">जम्मा बचत</div>
+            <div class="val text-success" id="preview-total">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+        <a href="{% url 'members:member_detail' member.member_number %}" class="btn-collateral-back">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <button type="submit" class="btn-collateral-next">
+          Next <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const monthly = document.getElementById('id_monthly_saving');
+  const child   = document.getElementById('id_child_saving');
+  const total   = document.getElementById('id_total_saving');
+  const share   = document.getElementById('id_share_amount');
+
+  function calcTotal() {
+    const m = parseFloat(monthly.value) || 0;
+    const c = parseFloat(child.value)   || 0;
+    if (m || c) total.value = (m + c).toFixed(2);
+    document.getElementById('preview-monthly').textContent = m ? 'Rs. ' + m.toLocaleString() : '—';
+    document.getElementById('preview-total').textContent   = (m+c) ? 'Rs. ' + (m+c).toLocaleString() : '—';
+  }
+  function updateShare() {
+    const s = parseFloat(share.value) || 0;
+    document.getElementById('preview-share').textContent = s ? 'Rs. ' + s.toLocaleString() : '—';
+  }
+
+  monthly.addEventListener('input', calcTotal);
+  child.addEventListener('input', calcTotal);
+  share.addEventListener('input', updateShare);
+  calcTotal(); updateShare();
+</script>
+{% endblock %}

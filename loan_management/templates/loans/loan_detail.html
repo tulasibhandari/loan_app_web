@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ loan.loan_type }} - Loan Details{% endblock %}
+{% load humanize %}
+
+
+{% block title %}Loan # {{loan.id}}-{{ loan.loan_type }} - Loan Details{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -80,7 +83,7 @@
                     </p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <h2 class="mb-2">रु. {{ loan.loan_amount }}</h2>
+                    <h2 class="mb-2">रु. {{ loan.loan_amount|intcomma }}</h2>
                     <span class="status-badge status-{{ loan.status }}">
                         {{ loan.get_status_display }}
                     </span>
@@ -95,6 +98,11 @@
                 <a href="{% url 'loans:loan_approval' loan.id %}" class="btn btn-success">
                     <i class="bi bi-check-circle"></i> Approve Loan
                 </a>
+                {% endif %}
+                {% if user.role == 'officer' %}
+                    <a href="{% url 'loans:loan_approval' loan.id %}" class="btn btn-outline-primary btn-sm">
+                        {% if loan.approval_status == 'pending' %}स्वीकृत गर्नुहोस्{% else %}सम्पादन गर्नुहोस्{% endif %}
+                    </a>
                 {% endif %}
                 <a href="{% url 'members:member_detail' loan.member.member_number %}" class="btn btn-info">
                     <i class="bi bi-person"></i> View Member
@@ -144,7 +152,7 @@
                     <div class="info-row">
                         <div class="info-label nepali-text">ऋण रकम (Amount):</div>
                         <div class="info-value">
-                            <strong class="text-success">रु. {{ loan.loan_amount }}</strong>
+                            <strong class="text-success">रु. {{ loan.loan_amount|intcomma }}</strong>
                         </div>
                     </div>
                     <div class="info-row">
@@ -185,7 +193,7 @@
                     <div class="info-row">
                         <div class="info-label nepali-text">स्वीकृत रकम (Approved Amount):</div>
                         <div class="info-value">
-                            <strong class="text-success">रु. {{ approval.approved_loan_amount }}</strong>
+                            <strong class="text-success">रु. {{ approval.approved_loan_amount|intcomma }}</strong>
                         </div>
                     </div>
                     <div class="info-row">
@@ -289,5 +297,352 @@
             </div>
         </div>
     </div>
+
+   
+    <div class="row">
+        <ul class="nav nav-tabs mb-4" id="loanDetailTabs" role="tablist">
+            <li class="nav-item" role="presentaion">
+                <button class="nav-link active collateral-tab nepali-text" data-bs-toggle="tab" data-bs-target="#collateral" type="button" role="tab">
+                    <i class="bi bi-shield-check"></i> धितो विवरण
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button class="nav-link  nepali-text" id="witness-tab" data-bs-toggle="tab" data-bs-target="#witness" type="button" role="tab">
+                    <i class="bi bi-people"></i> साक्षी
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link nepali-text" id="guarantor-tab" data-bs-toggle="tab" data-bs-target="#guarantor" type="button" role="tab">
+                    <i class="bi bi-shield-check"></i> जमानी
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link nepali-text" id="manjurinama-tab" data-bs-toggle="tab" data-bs-target="#manjurinama" type="button" role="tab">
+                    <i class="bi bi-file-text"></i> मञ्जुरीनामा
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="loanDetailTabsContent">
+            <!-- Collateral Tab -->
+            <div class="tab-pane fade show active" id="collateral" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 nepali-text">
+                        <i class="bi bi-shield-check text-primary me-1"></i> धितो विवरण
+                    </h6>
+                    <a href="{% url "collateral:basic_form" loan.member.member_number %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil-square me-1"></i> {% if collateral_basic %}सम्पादन {% else %}धितो भर्नुहोस् {% endif %}     
+                    </a>
+                </div>
+                {% if not collateral_basic and not collateral_properties %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span class="nepali-text">धितो जानकारी फेला परेन।</span>
+                        <a href="{% url "collateral:basic_form" loan.member.member_number %}" class="alert-link ms-2 nepali-text">अहिले भर्नुहोस</a>
+                    </div>
+                {% else %}
+                    <!-- Collateral Basic -->
+                    <div class="info-card mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong class="nepali-text"><i class="bi bi-piggy-bank me-1"></i> बचत विवरण</strong>
+                            <a href="{% url "collateral:basic_form" loan.member.member_number %}" class="btn btn-xs btn-link p-0" style="font-size:0.78rem;"> <i class="bi bi-pencil"></i> Edit</a>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6 col-md-3">
+                                <small class="text-muted d-block nepali-text">मासिक बचत</small>
+                                <strong class="nepali-text">रु. {{collateral_basic.monthly_saving }} </strong>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <small class="text-muted d-block nepali-text">बाल बचत</small>
+                                <strong class="nepali-text">रु. {{collateral_basic.child_saving }} </strong>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <small class="text-muted d-block nepali-text">जम्मा बचत</small>
+                                <strong class="nepali-text">रु. {{collateral_basic.total_saving }} </strong>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <small class="text-muted d-block nepali-text">शेयर रकम</small>
+                                <strong class="nepali-text">रु. {{collateral_basic.share_amount }} </strong>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Properties -->
+                {% if collateral_properties %}
+                    <div class="info-card mb-3">
+                        <div class="d-flex justify-content-between align-items center mb-2">
+                            <strong class="nepali-text"><i class="bi bi-house-door me-1"></i> जग्गा धितो विवरण</strong>
+                            <a href="{% url "collateral:property_form" loan.member.member_number %}" class="btn btn-link p-0" style="font-size:0.78rem;"><i class="bi bi-pencil"> Edit</i></a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="nepali-text">जग्गाधनीको नाम</th>
+                                        <th class="nepali-text">जिल्ला</th>
+                                        <th class="nepali-text">गाउँ/नगर पालिका</th>
+                                        <th class="nepali-text">वडा</th>
+                                        <th class="nepali-text">कित्ता नं</th>
+                                        <th class="nepali-text">क्षेत्रफल</th>
+                                        <th class="nepali-text">किसिम</th>                                    
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in collateral_properties %}
+                                    <tr class="nepali-text">
+                                        <td>{{ p.owner_name }}</td>
+                                        <td>{{ p.district }}</td>
+                                        <td>{{ p.municipality_vdc }}</td>
+                                        <td>{{ p.ward_no }}</td>
+                                        <td>{{ p.plot_no }}</td>
+                                        <td>{{ p.area }}</td>
+                                        <td>{{ p.land_type }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Income / Expense -->
+                {% if collateral_income or collateral_expense %}
+                <div class="info-card mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong class="nepali-text"><i class="bi bi-bar-chart-line me-1"></i> आय/व्यय सारांश</strong>
+                        <a href="{% url 'collateral:income_expense_form' loan.member.member_number %}"
+                        class="btn btn-link p-0" style="font-size:0.78rem;">Edit</a>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-4">
+                            <div class="text-center p-2 rounded" style="background:#d4edda;">
+                                <div style="font-size:0.72rem; color:#155724;" class="nepali-text">जम्मा आय</div>
+                                <strong style="color:#155724;">रु. {{ total_income|floatformat:0 }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center p-2 rounded" style="background:#f8d7da;">
+                                <div style="font-size:0.72rem; color:#721c24;" class="nepali-text">जम्मा व्यय</div>
+                                <strong style="color:#721c24;">रु. {{ total_expense|floatformat:0 }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center p-2 rounded" style="background:#d1ecf1;">
+                                <div style="font-size:0.72rem; color:#0c5460;" class="nepali-text">खुद आय</div>
+                                <strong style="color:#0c5460;">रु. {{ net_income|floatformat:0 }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Family Details -->
+                {% if collateral_family %}
+                <div class="info-card mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong class="nepali-text"><i class="bi bi-people me-1"></i> पारिवारिक विवरण</strong>
+
+                        <a href="{% url "collateral:family_form" loan.member.member_number %}" class="btn btn-link p-0" style="font-size:0.78rem; text-decoration:none;"><i class="bi bi-pencil"> Edit</i></a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead class="table-light">
+                                <tr class="nepali-text">
+                                    <th>नाम</th>
+                                    <th>नाता</th>
+                                    <th>उमेर</th>
+                                    <th>पेशा</th>
+                                    <th>मासिक आय</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for f in collateral_family  %}
+                                <tr class="nepali-text">
+                                    <td>{{ f.name }}</td>
+                                    <td>{{ f.relation }}</td>
+                                    <td>{{ f.age }}</td>
+                                    <td>{{ f.occupation }}</td>
+                                    <td>रु. {{ f.monthly_income }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Affiliaations -->
+                {% if collateral_affiliations %}
+                <div class="info-card mb-3">
+                    <div class="d-flex justify-content-between align-items center mb-2">
+                        <strong class="nepali-text"><i class="bi bi-building me-1"></i> संस्था आबद्धता</strong>
+                        <a href="{% url "collateral:affiliation_form" loan.member.member_number %}" style="font-size:0.78rem; text-decoration:none;" class="btn btn-link p-0"><i class="bi bi-pencil"> Edit</i></a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead class="table-light">
+                                <tr class="nepali-text">
+                                    <th>आबद्ध संस्था</th>
+                                    <th>संस्थाको ठेगाना</th>
+                                    <th>पद</th>
+                                    <th>अनुमानित आय</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for a in collateral_affiliations %}
+                                <tr class="nepali-text">
+                                    <td>{{ a.institution }}</td>
+                                    <td>{{ a.address_of_institution }}</td>
+                                    <td>{{ a.position }}</td>
+                                    <td> रु. {{ a.estimated_income }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Full Overview Link -->
+                <div class="text-end mt-2">
+                    <a href="{% url "collateral:overview" loan.member.member_number %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-eye me-1"></i> 
+                        <span class="nepali-text">पूर्ण धितो विवरण हेर्नुहोस</span>
+                    </a>
+                </div>
+                {% endif %}            
+
+            </div>
+
+            <!-- Witness Tab -->
+            <div class="tab-pane fade show" id="witness" role="tabpanel">
+                {% with witnesses=loan.member.witnessinfo_set.all %}
+                {% if witnesses %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm nepali-text">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>नाम</th>
+                                    <th>सम्बन्ध</th>
+                                    <th>ठेगाना</th>
+                                    <th>वडा</th>
+                                    <th>उमेर</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for witness in witnesses %}
+                                <tr>
+                                    <td><strong class="nepali-text">{{ witness.name }}</strong></td>
+                                    <td class="nepali-text">{{ witness.relation }}</td>
+                                    <td>{{ witness.address|truncatewords:8 }}</td>
+                                    <td>{{ witness.ward }}</td>
+                                    <td>{{ witness.age }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        कुनै साक्षी जानकारी भेटिएन। 
+                        <a href="{% url 'loans:witness_form' loan.member.member_number %}" class="btn btn-sm btn-warning">थप्नुहोस्</a>
+                    </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Guarantor Tab -->
+            <div class="tab-pane fade" id="guarantor" role="tabpanel">
+                {% with guarantors=loan.member.guarantordetails_set.all %}
+                {% if guarantors %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>नाम</th>
+                                    <th>ठेगाना</th>
+                                    <th>फोन</th>
+                                    <th>वडा</th>
+                                    <th>उमेर</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for g in guarantors %}
+                                <tr>
+                                    <td><strong class="nepali-text">{{ g.guarantor_name }}</strong></td>
+                                    <td>{{ g.guarantor_address|truncatewords:6 }}</td>
+                                    <td>{{ g.guarantor_phone }}</td>
+                                    <td>{{ g.guarantor_ward }}</td>
+                                    <td>{{ g.guarantor_age }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        कुनै जमानी जानकारी भेटिएन। 
+                        <a href="{% url 'loans:guarantor_form' loan.member.member_number %}" class="btn btn-sm btn-warning">थप्नुहोस्</a>
+                    </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Manjurinama Tab -->
+            <div class="tab-pane fade" id="manjurinama" role="tabpanel">
+                {% with manjuri=loan.member.manjurinamadetails_set.first %}
+                {% if manjuri %}
+                    <div class="card border-success">
+                        <div class="card-body">
+                            <h6 class="card-title text-success mb-3">
+                                <i class="bi bi-file-earmark-check"></i> मञ्जुरीनामा विवरण
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>नाम:</strong> {{ manjuri.person_name }}</p>
+                                    <p><strong>बुबा:</strong> {{ manjuri.father_name }}</p>
+                                    <p><strong>हजुरबुबा:</strong> {{ manjuri.grandfather_name }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>जिल्ला:</strong> {{ manjuri.district }}</p>
+                                    <p><strong>नगरपालिका:</strong> {{ manjuri.municipality }}</p>
+                                    <p><strong>वडा/टोल:</strong> {{ manjuri.wada_no }} - {{ manjuri.tole }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        मञ्जुरीनामा विवरण भर्न बाँकी छ। 
+                        <a href="{% url 'loans:manjurinama_form' loan.member.member_number %}" class="btn btn-sm btn-info">भर्नुहोस्</a>
+                    </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- Quick Actions Footer -->
+     <div class="d-flex flex-wrap gap-2 pt-3 border-top">
+        <a href="{% url 'reports:report_center' %}" class="btn btn-outline-dark btn-sm">
+            <i class="bi bi-file-word"></i> Generate Reports
+        </a>
+
+        {% if user.role == 'admin' %}
+            <a href="#" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-pencil-square"></i> ऋण सम्पादन गर्नुहोस्
+            </a>        
+        {% endif %}
+     </div>
 </div>
+
+<!-- Bootstrap 5 JS required for tabs -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

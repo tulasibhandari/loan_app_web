@@ -1,0 +1,173 @@
+{% extends 'collateral/collateral_base.html' %}
+
+{% block collateral_content %}
+<div class="collateral-card">
+  <div class="card-header">
+    <i class="bi bi-bar-chart-line"></i>
+    <div>
+      <h5>आय/व्यय विवरण</h5>
+      <small>मासिक आम्दानी र खर्चको विवरण</small>
+    </div>
+  </div>
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <!-- ── Income ── -->
+      <div class="section-divider">
+        <span><i class="bi bi-arrow-up-circle" style="color:var(--success-color);"></i> आय (Income)</span>
+        <hr>
+      </div>
+
+      {{ income_formset.management_form }}
+      <div id="income-container">
+        {% for form in income_formset %}
+        <div class="formset-row {% if form.DELETE.value %}marked-delete{% endif %}" id="income-row-{{ forloop.counter0 }}">
+          <span class="row-number nepali-text" style="background:var(--success-color);">आय {{ forloop.counter }}</span>
+          <div class="d-flex justify-content-end mb-2">
+            {% if form.DELETE %}
+            <label class="btn-delete-row"><{{ form.DELETE }}<i class="bi bi-trash3"></i></label>
+            {% endif %}
+          </div>
+          {{ form.id }}
+          <div class="row g-3 align-items-end">
+            <div class="col-md-7">
+              <label class="form-label nepali-text">शीर्षक</label>
+              {{ form.field }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label nepali-text">रकम (रु.)</label>
+              {{ form.amount }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn-add-row mt-1 mb-3 nepali-text" id="add-income-btn"
+              style="border-color:var(--success-color); color:var(--success-color);">
+        <i class="bi bi-plus-circle"></i> आय शीर्षक थप्नुहोस्
+      </button>
+
+      <!-- ── Expense ── -->
+      <div class="section-divider">
+        <span><i class="bi bi-arrow-down-circle" style="color:var(--danger-color);"></i> व्यय (Expense)</span>
+        <hr>
+      </div>
+
+      {{ expense_formset.management_form }}
+      <div id="expense-container">
+        {% for form in expense_formset %}
+        <div class="formset-row {% if form.DELETE.value %}marked-delete{% endif %}" id="expense-row-{{ forloop.counter0 }}">
+          <span class="row-number nepali-text" style="background:var(--danger-color);">व्यय {{ forloop.counter }}</span>
+          <div class="d-flex justify-content-end mb-2">
+            {% if form.DELETE %}
+            <label class="btn-delete-row">{{ form.DELETE }}<i class="bi bi-trash3"></i></label>
+            {% endif %}
+          </div>
+          {{ form.id }}
+          <div class="row g-3 align-items-end">
+            <div class="col-md-7">
+              <label class="form-label nepali-text">शीर्षक</label>
+              {{ form.field }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label nepali-text">रकम (रु.)</label>
+              {{ form.amount }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn-add-row mt-1 nepali-text" id="add-expense-btn"
+              style="border-color:var(--danger-color); color:var(--danger-color);">
+        <i class="bi bi-plus-circle"></i> व्यय शीर्षक थप्नुहोस्
+      </button>
+
+      <!-- ── Summary ── -->
+      <div class="summary-box mt-4">
+        <div class="row text-center g-0">
+          <div class="col-4 border-end">
+            <div class="lbl nepali-text mb-1">जम्मा आय</div>
+            <div class="val text-success" id="total-income-display">Rs. 0</div>
+          </div>
+          <div class="col-4 border-end">
+            <div class="lbl nepali-text mb-1">जम्मा व्यय</div>
+            <div class="val text-danger" id="total-expense-display">Rs. 0</div>
+          </div>
+          <div class="col-4">
+            <div class="lbl nepali-text mb-1">खुद आय</div>
+            <div class="val text-primary" id="net-income-display">Rs. 0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+        <a href="{% url 'collateral:family_form' member.member_number %}" class="btn-collateral-back">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <button type="submit" class="btn-collateral-next">
+          Next <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('input[type=checkbox][id$="-DELETE"]').forEach(cb => cb.style.display = 'none');
+
+  function bindDeleteButtons(scope) {
+    scope.querySelectorAll('.btn-delete-row').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const row = this.closest('.formset-row');
+        const cb  = row.querySelector('input[type=checkbox][id$="-DELETE"]');
+        if (cb) { cb.checked = !cb.checked; row.classList.toggle('marked-delete', cb.checked); }
+        updateSummary();
+      });
+    });
+  }
+  bindDeleteButtons(document);
+
+  function updateSummary() {
+    let inc = 0, exp = 0;
+    document.querySelectorAll('#income-container .formset-row:not(.marked-delete) input[id$="-amount"]').forEach(i => inc += parseFloat(i.value) || 0);
+    document.querySelectorAll('#expense-container .formset-row:not(.marked-delete) input[id$="-amount"]').forEach(i => exp += parseFloat(i.value) || 0);
+    const net = inc - exp;
+    document.getElementById('total-income-display').textContent  = 'Rs. ' + inc.toLocaleString();
+    document.getElementById('total-expense-display').textContent = 'Rs. ' + exp.toLocaleString();
+    const netEl = document.getElementById('net-income-display');
+    netEl.textContent = 'Rs. ' + net.toLocaleString();
+    netEl.style.color = net >= 0 ? 'var(--success-color)' : 'var(--danger-color)';
+  }
+  document.addEventListener('input', e => { if (e.target.matches('input[id$="-amount"]')) updateSummary(); });
+
+  function makeAddRow(btnId, containerId, totalFormsId, prefix, labelText) {
+    document.getElementById(btnId).addEventListener('click', function() {
+      const container  = document.getElementById(containerId);
+      const totalForms = document.getElementById(totalFormsId);
+      const count      = parseInt(totalForms.value);
+      const rows       = container.querySelectorAll('.formset-row');
+      if (!rows.length) return;
+
+      const newRow = rows[rows.length - 1].cloneNode(true);
+      newRow.classList.remove('marked-delete');
+      newRow.innerHTML = newRow.innerHTML.replace(new RegExp(prefix + '-(\\d+)-', 'g'), `${prefix}-${count}-`);
+      newRow.id = prefix + '-row-' + count;
+      newRow.querySelector('.row-number').textContent = labelText + ' ' + (count + 1);
+
+      newRow.querySelectorAll('input[type=text]').forEach(i => i.value = '');
+      newRow.querySelectorAll('input[type=hidden]:not([name$="-id"])').forEach(i => i.value = '');
+      newRow.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = false; cb.style.display = 'none'; });
+      bindDeleteButtons(newRow);
+
+      container.appendChild(newRow);
+      totalForms.value = count + 1;
+    });
+  }
+
+  makeAddRow('add-income-btn',  'income-container',  'id_income-TOTAL_FORMS',  'income',  'आय');
+  makeAddRow('add-expense-btn', 'expense-container', 'id_expense-TOTAL_FORMS', 'expense', 'व्यय');
+
+  updateSummary();
+</script>
+{% endblock %}

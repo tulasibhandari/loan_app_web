@@ -1,0 +1,117 @@
+{% extends 'collateral/collateral_base.html' %}
+
+{% block collateral_content %}
+<div class="collateral-card">
+  <div class="card-header">
+    <i class="bi bi-building"></i>
+    <div>
+      <h5>संस्था सम्बन्ध विवरण</h5>
+      <small>संस्थागत आबद्धताको जानकारी</small>
+    </div>
+  </div>
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {{ formset.management_form }}
+
+      <div id="formset-container">
+        {% for form in formset %}
+        <div class="formset-row {% if form.DELETE.value %}marked-delete{% endif %}" id="row-{{ forloop.counter0 }}">
+          <span class="row-number nepali-text">संस्था {{ forloop.counter }}</span>
+          <div class="d-flex justify-content-end mb-2">
+            {% if form.DELETE %}
+            <label class="btn-delete-row">{{ form.DELETE }}<i class="bi bi-trash3"></i></label>
+            {% endif %}
+          </div>
+          {{ form.id }}
+          <div class="row g-3">
+            <div class="col-md-5">
+              <label class="form-label nepali-text">संस्थाको नाम</label>
+              {{ form.institution }}
+              {% if form.institution.errors %}<div class="text-danger" style="font-size:0.78rem;">{{ form.institution.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label nepali-text">संस्थाको ठेगाना</label>
+              {{ form.address_of_institution }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label nepali-text">पद</label>
+              {{ form.position }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label nepali-text">अनुमानित आय (रु.)</label>
+              {{ form.estimated_income }}
+            </div>
+            <div class="col-md-8">
+              <label class="form-label nepali-text">कैफियत</label>
+              {{ form.remarks }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="btn-add-row mt-2 nepali-text" id="add-row-btn">
+        <i class="bi bi-plus-circle"></i> अर्को संस्था थप्नुहोस्
+      </button>
+
+      <!-- Completion Note -->
+      <div class="alert alert-success mt-4 py-2" style="font-size:0.85rem; border-radius:8px;">
+        <i class="bi bi-info-circle me-2"></i>
+        <span class="nepali-text">यो अन्तिम चरण हो। सेभ गरेपछि सदस्यको पृष्ठमा फर्किनुहुनेछ।</span>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+        <a href="{% url 'collateral:income_expense_form' member.member_number %}" class="btn-collateral-back">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <div class="d-flex gap-2">
+          <a href="{% url 'collateral:overview' member.member_number %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-eye me-1"></i>Overview
+          </a>
+          <button type="submit" class="btn-collateral-finish">
+            <i class="bi bi-check-circle"></i> सम्पन्न गर्नुहोस्
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('input[type=checkbox][id$="-DELETE"]').forEach(cb => cb.style.display = 'none');
+
+  function bindDelete(scope) {
+    scope.querySelectorAll('.btn-delete-row').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const row = this.closest('.formset-row');
+        const cb  = row.querySelector('input[type=checkbox][id$="-DELETE"]');
+        if (cb) { cb.checked = !cb.checked; row.classList.toggle('marked-delete', cb.checked); }
+      });
+    });
+  }
+  bindDelete(document);
+
+  document.getElementById('add-row-btn').addEventListener('click', function() {
+    const container  = document.getElementById('formset-container');
+    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+    const count      = parseInt(totalForms.value);
+    const rows       = container.querySelectorAll('.formset-row');
+    if (!rows.length) return;
+
+    const newRow = rows[rows.length - 1].cloneNode(true);
+    newRow.id    = 'row-' + count;
+    newRow.classList.remove('marked-delete');
+    newRow.innerHTML = newRow.innerHTML.replace(/form-(\d+)-/g, `form-${count}-`);
+    newRow.querySelector('.row-number').textContent = 'संस्था ' + (count + 1);
+
+    newRow.querySelectorAll('input[type=text], textarea').forEach(i => i.value = '');
+    newRow.querySelectorAll('input[type=hidden]:not([name$="-id"])').forEach(i => i.value = '');
+    newRow.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = false; cb.style.display = 'none'; });
+    bindDelete(newRow);
+
+    container.appendChild(newRow);
+    totalForms.value = count + 1;
+  });
+</script>
+{% endblock %}
