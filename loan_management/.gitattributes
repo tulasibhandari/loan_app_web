@@ -1,0 +1,20 @@
+# Handle Python files
+*.py text eol=lf
+
+# HTML, CSS, JS files
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+
+# Templates
+*.txt text eol=lf
+
+# Images and binaries (no conversion)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.svg binary
+
+# Windows-specific
+*.bat text eol=crlf
