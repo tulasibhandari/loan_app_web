@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}आयोजना विवरण - {{ member.member_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .member-banner {
+    background: linear-gradient(135deg, var(--primary-color), #2980b9);
+    color: #fff;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .member-banner .avatar {
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; font-weight: 700; flex-shrink: 0;
+  }
+  .member-banner .info h5 { margin: 0; font-weight: 600; font-size: 1rem; }
+  .member-banner .info small { opacity: 0.85; font-size: 0.8rem; }
+
+  .project-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+  }
+  .project-card > .card-header {
+    background: linear-gradient(135deg, var(--primary-color), #2980b9);
+    color: #fff;
+    padding: 0.9rem 1.25rem;
+    display: flex; align-items: center; gap: 0.65rem;
+    border-radius: 8px 8px 0 0;
+  }
+  .project-card > .card-header h5 { margin: 0; font-size: 0.95rem; font-weight: 600; }
+  .project-card > .card-header small { opacity: 0.85; font-size: 0.77rem; }
+  .project-card > .card-body { padding: 1.5rem; }
+
+  .formset-row {
+    background: var(--light-bg);
+    border: 1.5px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.85rem;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .formset-row:hover { border-color: var(--primary-color); }
+  .formset-row.marked-delete {
+    background: #fdf2f2;
+    border-color: var(--danger-color);
+    opacity: 0.6;
+  }
+  .row-number {
+    position: absolute;
+    top: -10px; left: 14px;
+    background: var(--primary-color);
+    color: #fff; font-size: 0.68rem; font-weight: 600;
+    padding: 1px 9px; border-radius: 20px;
+  }
+
+  .form-label {
+    font-size: 0.82rem; font-weight: 500;
+    color: #495057; margin-bottom: 0.3rem;
+  }
+  .form-control, .form-select {
+    border: 1.5px solid var(--border-color);
+    border-radius: 6px; font-size: 0.88rem;
+    padding: 0.42rem 0.75rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52,152,219,0.15);
+    outline: none;
+  }
+
+  .btn-delete-row {
+    background: none; border: none;
+    color: var(--danger-color);
+    font-size: 1rem; cursor: pointer;
+    padding: 3px 8px; border-radius: 5px;
+    transition: background 0.2s;
+  }
+  .btn-delete-row:hover { background: #fdf2f2; }
+
+  .btn-add-row {
+    border: 1.5px dashed var(--primary-color);
+    background: rgba(52,152,219,0.04);
+    color: var(--primary-color);
+    border-radius: 6px;
+    padding: 0.4rem 1rem;
+    font-size: 0.83rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+  }
+  .btn-add-row:hover { background: rgba(52,152,219,0.1); }
+
+  /* Summary bar */
+  .summary-bar {
+    background: var(--light-bg);
+    border: 1.5px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+  }
+  .summary-bar .s-label {
+    font-size: 0.72rem; color: #6c757d;
+    font-weight: 600; margin-bottom: 2px;
+  }
+  .summary-bar .s-val {
+    font-size: 1rem; font-weight: 700;
+  }
+
+  .btn-back {
+    color: var(--dark-color);
+    border: 1.5px solid var(--border-color);
+    background: #fff; border-radius: 6px;
+    padding: 0.42rem 1.1rem; font-size: 0.88rem;
+    font-weight: 500; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    transition: all 0.2s;
+  }
+  .btn-back:hover { background: var(--light-bg); border-color: var(--primary-color); color: var(--primary-color); }
+
+  .btn-save {
+    background: linear-gradient(135deg, var(--primary-color), #2980b9);
+    color: #fff; border: none; border-radius: 6px;
+    padding: 0.42rem 1.4rem; font-size: 0.88rem; font-weight: 600;
+    cursor: pointer; transition: opacity 0.2s;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+  }
+  .btn-save:hover { opacity: 0.9; color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-3">
+
+  <!-- Breadcrumb -->
+  <nav style="font-size:0.82rem; color:#6c757d;" class="mb-2">
+    <a href="{% url 'dashboard:home' %}" style="color:var(--primary-color);">Dashboard</a> /
+    <a href="{% url 'members:member_list' %}" style="color:var(--primary-color);">Members</a> /
+    <a href="{% url 'members:member_detail' member.member_number %}" style="color:var(--primary-color);">{{ member.member_name }}</a> /
+    <span class="text-muted nepali-text">आयोजना विवरण</span>
+  </nav>
+
+  <!-- Member Banner -->
+  <div class="member-banner">
+    <div class="avatar">{{ member.member_name|first }}</div>
+    <div class="info">
+      <h5>{{ member.member_name }}</h5>
+      <small>Member No: {{ member.member_number }} &nbsp;|&nbsp; {{ member.phone }}</small>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  {% for msg in messages %}
+  <div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}{{ msg.tags }}{% endif %} alert-dismissible fade show mb-3">
+    {{ msg }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+
+  <div class="project-card">
+    <div class="card-header">
+      <i class="bi bi-kanban"></i>
+      <div>
+        <h5 class="nepali-text">आयोजना विवरण</h5>
+        <small class="nepali-text">ऋणको उद्देश्य र लगानी विवरण</small>
+      </div>
+    </div>
+    <div class="card-body">
+      <form method="post" novalidate id="project-form">
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        <div id="formset-container">
+          {% for form in formset %}
+          <div class="formset-row {% if form.DELETE.value %}marked-delete{% endif %}" id="row-{{ forloop.counter0 }}">
+            <span class="row-number nepali-text">आयोजना {{ forloop.counter }}</span>
+
+            <div class="d-flex justify-content-end mb-2">
+              {% if form.DELETE %}
+              <label class="btn-delete-row" title="हटाउनुहोस्">
+                {{ form.DELETE }}
+                <i class="bi bi-trash3"></i>
+              </label>
+              {% endif %}
+            </div>
+
+            {{ form.id }}
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label nepali-text">आयोजनाको नाम <span class="text-danger">*</span></label>
+                {{ form.project_name }}
+                {% if form.project_name.errors %}
+                  <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.project_name.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label nepali-text">माग ऋण रकम (रु.)</label>
+                {{ form.requested_loan_amount }}
+                {% if form.requested_loan_amount.errors %}
+                  <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.requested_loan_amount.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label nepali-text">स्व-लगानी (रु.)</label>
+                {{ form.self_investment }}
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label nepali-text">जम्मा लागत (रु.)</label>
+                {{ form.total_cost }}
+                <small class="text-muted" style="font-size:0.74rem;" class="nepali-text">स्व-लगानी + माग रकम</small>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label nepali-text">कैफियत</label>
+                {{ form.remarks }}
+              </div>
+            </div>
+
+          </div>
+          {% endfor %}
+        </div>
+
+        <button type="button" class="btn-add-row mt-2 nepali-text" id="add-row-btn">
+          <i class="bi bi-plus-circle"></i> अर्को आयोजना थप्नुहोस्
+        </button>
+
+        <!-- Summary -->
+        <div class="summary-bar mt-4">
+          <div class="row g-0 text-center">
+            <div class="col-4 border-end">
+              <div class="s-label nepali-text">जम्मा स्व-लगानी</div>
+              <div class="s-val text-primary" id="total-self">रु. ०</div>
+            </div>
+            <div class="col-4 border-end">
+              <div class="s-label nepali-text">जम्मा माग रकम</div>
+              <div class="s-val text-success" id="total-requested">रु. ०</div>
+            </div>
+            <div class="col-4">
+              <div class="s-label nepali-text">जम्मा लागत</div>
+              <div class="s-val text-warning" id="total-cost">रु. ०</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+          <a href="{% url 'members:member_detail' member.member_number %}" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Back
+          </a>
+          <button type="submit" class="btn-save">
+            <i class="bi bi-check-circle"></i>
+            <span class="nepali-text">सेभ गर्नुहोस्</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Hide delete checkboxes
+  document.querySelectorAll('input[type=checkbox][id$="-DELETE"]').forEach(cb => cb.style.display = 'none');
+
+  // Bind delete toggle
+  function bindDelete(scope) {
+    scope.querySelectorAll('.btn-delete-row').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const row = this.closest('.formset-row');
+        const cb  = row.querySelector('input[type=checkbox][id$="-DELETE"]');
+        if (cb) { cb.checked = !cb.checked; row.classList.toggle('marked-delete', cb.checked); }
+        updateSummary();
+      });
+    });
+  }
+  bindDelete(document);
+
+  // Auto-calculate total_cost = self_investment + requested_loan_amount
+  function calcRowTotal(row) {
+    const self  = parseFloat(row.querySelector('input[id$="-self_investment"]')?.value) || 0;
+    const req   = parseFloat(row.querySelector('input[id$="-requested_loan_amount"]')?.value) || 0;
+    const totalField = row.querySelector('input[id$="-total_cost"]');
+    if (totalField) totalField.value = (self + req) || '';
+    updateSummary();
+  }
+
+  document.addEventListener('input', function(e) {
+    if (e.target.matches('input[id$="-self_investment"]') ||
+        e.target.matches('input[id$="-requested_loan_amount"]')) {
+      calcRowTotal(e.target.closest('.formset-row'));
+    }
+    if (e.target.matches('input[id$="-total_cost"]')) {
+      updateSummary();
+    }
+  });
+
+  // Summary totals
+  function updateSummary() {
+    let totalSelf = 0, totalReq = 0, totalCost = 0;
+    document.querySelectorAll('.formset-row:not(.marked-delete)').forEach(row => {
+      totalSelf += parseFloat(row.querySelector('input[id$="-self_investment"]')?.value) || 0;
+      totalReq  += parseFloat(row.querySelector('input[id$="-requested_loan_amount"]')?.value) || 0;
+      totalCost += parseFloat(row.querySelector('input[id$="-total_cost"]')?.value) || 0;
+    });
+    document.getElementById('total-self').textContent      = 'रु. ' + totalSelf.toLocaleString();
+    document.getElementById('total-requested').textContent = 'रु. ' + totalReq.toLocaleString();
+    document.getElementById('total-cost').textContent      = 'रु. ' + totalCost.toLocaleString();
+  }
+
+  // Add new row
+  document.getElementById('add-row-btn').addEventListener('click', function() {
+    const container  = document.getElementById('formset-container');
+    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+    const count      = parseInt(totalForms.value);
+    const rows       = container.querySelectorAll('.formset-row');
+    if (!rows.length) return;
+
+    const newRow = rows[rows.length - 1].cloneNode(true);
+    newRow.id    = 'row-' + count;
+    newRow.classList.remove('marked-delete');
+    newRow.innerHTML = newRow.innerHTML.replace(/form-(\d+)-/g, `form-${count}-`);
+    newRow.querySelector('.row-number').textContent = 'आयोजना ' + (count + 1);
+
+    newRow.querySelectorAll('input[type=text], textarea').forEach(i => i.value = '');
+    newRow.querySelectorAll('input[type=hidden]:not([name$="-id"])').forEach(i => i.value = '');
+    newRow.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = false; cb.style.display = 'none'; });
+    bindDelete(newRow);
+
+    container.appendChild(newRow);
+    totalForms.value = count + 1;
+    updateSummary();
+  });
+
+  // Init summary
+  updateSummary();
+</script>
+{% endblock %}

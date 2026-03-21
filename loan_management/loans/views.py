@@ -8,6 +8,7 @@ from members.models import Member
 from collateral.models import (CollateralBasic, CollateralProperty,
                                CollateralFamilyDetail, CollateralIncomeExpense,
                                CollateralAffiliation)
+from projects.models import ProjectDetail
 
 @login_required
 def loan_create(request, member_number):
@@ -82,6 +83,8 @@ def loan_detail(request, loan_id):
     total_income = sum(float(i.amount or 0) for i in collateral_income)
     total_expense = sum(float(e.amount or 0) for e in collateral_expense)
 
+    projects = ProjectDetail.objects.filter(member=loan.member)
+
     context = {
         'loan': loan,
         'member': loan.member,
@@ -95,7 +98,8 @@ def loan_detail(request, loan_id):
         'collateral_expense': collateral_expense,
         'total_income': total_income,
         'total_expense': total_expense,
-        'net_income': total_income - total_expense,        
+        'net_income': total_income - total_expense,
+        'projects': projects,     
     }
 
     return render(request, 'loans/loan_detail.html', context)

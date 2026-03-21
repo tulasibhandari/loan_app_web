@@ -1,3 +1,5 @@
+from nepali_datetime import datetime as nepali_datetime
+
 from members.models import Member
 from loans.models import LoanInfo, ApprovalInfo, WitnessInfo, GuarantorDetails
 from collateral.models import (
@@ -31,11 +33,56 @@ class ReportContextBuilder:
             # Get organization profile
             org = OrganatizationProfile.objects.first()
 
+            # BS Date conversion
+            today_bs = nepali_datetime.date.today()
+            # maturity_bs = nepali_datetime.strptime(
+            #     str(loan.maturity_date), '%Y-%m-%d'
+            # ).date() if hasattr(loan, 'maturity_date') and loan.maturity_date else today_bs
+
+            # Nepali Number Conversion 
+            def num_to_nepali_words(num):
+                if not isinstance(num, (int, float)) or num == 0:
+                    return "शून्य"
+                ones = ["", "एक", "दुई", "तीन", "चार", "पाँच", "छ", "सात", "आठ", "नौ"]
+                tens = ["", "दश", "बीस", "तीस", "चालिस", "पचास", "साठी", "सत्तरी", "असी", "नब्बे"]
+                scales = ["", "हजार", "लाख", "करोड"]
+
+                def convert_hundreds(n):
+                    res = ""
+                    if n >= 100:
+                        res += ones[n // 100] + " सय "
+                        n %= 100
+                    if n >=10:
+                        res += tens[n // 10] + " "
+                        n %= 10
+                    if n > 0:
+                        res += ones[n] + " "
+                    return res.strip()
+                
+                if num < 1000:
+                    return convert_hundreds(int(num)) + " रुपैयाँ"
+                
+                groups = []
+                n = int(num)
+                while n > 0:
+                    groups.append(n % 1000)
+                    n //= 1000
+
+                result = ""
+                for i, val in enumerate(reversed(groups)):
+                    if val == 0:
+                        continue
+                    if i > 0:
+                        result += convert_hundreds(val) + " " + scales[i] + " "
+                    else:
+                        result += convert_hundreds(val) + " "
+                return result.strip() + " रुपैयाँ"       
+            
             context = {
                 # Organization Info
                 'company_name': org.company_name if org else '',
                 'company_address': org.address if org else '',
-
+            
                 # Member Info
                 'member_number': member.member_number,
                 'member_name': member.member_name,
@@ -56,6 +103,12 @@ class ReportContextBuilder:
                 'repayment_duration': loan.repayment_duration,
                 'loan_amount': loan.loan_amount,
                 'loan_amount_in_words': loan.loan_amount_in_words,
+                'loan_amount_in_words': num_to_nepali_words(loan.loan_amount),
+                'bs_year': str(today_bs.year),
+                'bs_month': str(today_bs.month).zfil(2),
+                'bs_day': str(today_bs.day).zfill(2),
+                'date_nepali': today_bs.strftime('%Y/%m/%d'),
+                'bs_roj': today_bs.strftime('%A'),
                 'loan_completion_year': loan.loan_completion_year,
                 'loan_completion_month': loan.loan_completion_month,
                 'loan_completion_day': loan.loan_completion_day,
@@ -86,6 +139,14 @@ class ReportContextBuilder:
                         'plot_no': p.plot_no,
                         'area': p.area,
                         'land_type': p.land_type,
+                        
+                        # Collateral data
+                        'collateral_owner_name':p.owner_name,
+                        'collateral_municipality': p.municipality_vdc,
+                        'collataral_ward_no': str(p.ward_no).zfill(2),
+                        'collateral_plot_no': p.plot_no,
+                        'collateral_area': p.area,
+                        'collateral_remarks': p.remarks or '',
                     }
                     for p in properties
                 ],
@@ -155,5 +216,7 @@ class ReportContextBuilder:
             raise Exception(f"Member {member_number} not found!")
         except LoanInfo.DoesNotExist:
             raise Exception(f"No loan found for member {member_number}!")
+        
+    # Other functions need to be added    
         
 

@@ -322,6 +322,12 @@
                     <i class="bi bi-file-text"></i> मञ्जुरीनामा
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="projects-tab" data-bs-toggle="tab"
+                        data-bs-target="#projects" type="button" role="tab">
+                    <i class="bi bi-kanban"></i> परियोजना विवरण
+                </button>
+            </li>
         </ul>
 
         <div class="tab-content" id="loanDetailTabsContent">
@@ -622,6 +628,64 @@
                     </div>
                 {% endif %}
                 {% endwith %}
+            </div>
+
+            <!-- Project (परियोजना) tab -->
+            <div class="tab-pane fade" id="projects" role="tabpanel">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 nepali-text">
+                        <i class="bi bi-kanban text-primary me-1"></i> परियोजना विवरण
+                    </h6>
+                    <a href="{% url 'projects:project_name' loan.member.member_number %}"
+                    class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil-square me-1"></i>
+                        {% if projects %}सम्पादन{% else %} परियोजना थप्नुहोस्{% endif %}
+                    </a>
+                </div>
+
+                {% if not projects %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span class="nepali-text">आयोजना विवरण भरिएको छैन।</span>
+                        <a href="{% url 'projects:project_name' loan.member.member_number %}"
+                        class="alert-link ms-2 nepali-text">अहिले थप्नुहोस् →</a>
+                    </div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="nepali-text">आयोजनाको नाम</th>
+                                    <th class="nepali-text">स्व-लगानी</th>
+                                    <th class="nepali-text">माग रकम</th>
+                                    <th class="nepali-text">जम्मा लागत</th>
+                                    <th class="nepali-text">कैफियत</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in projects %}
+                                <tr>
+                                    <td><strong>{{ p.project_name }}</strong></td>
+                                    <td>रु. {{ p.self_investment }}</td>
+                                    <td>रु. {{ p.requested_loan_amount }}</td>
+                                    <td>रु. {{ p.total_cost }}</td>
+                                    <td>{{ p.remarks|default:"—" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td><strong class="nepali-text">जम्मा</strong></td>
+                                    <td><strong>रु. {{ projects_total_self }}</strong></td>
+                                    <td><strong>रु. {{ projects_total_requested }}</strong></td>
+                                    <td><strong>रु. {{ projects_total_cost }}</strong></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
