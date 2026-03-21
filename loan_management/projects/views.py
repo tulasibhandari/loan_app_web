@@ -9,12 +9,10 @@ from loans.models import LoanInfo
 
 @login_required
 def project_form(request, member_number):
-    """ Add / Edit project details for a member"""
+    """Add / Edit project details for a member"""
     member = get_object_or_404(Member, member_number=member_number)
-
-    # Get existing projects for this member
     existing_projects = ProjectDetail.objects.filter(member=member)
-
+ 
     if request.method == 'POST':
         formset = ProjectDetailFormSet(request.POST, queryset=existing_projects)
         if formset.is_valid():
@@ -22,24 +20,20 @@ def project_form(request, member_number):
             for project in projects:
                 project.member = member
                 project.save()
-            
-            # Delete projects marked for deletion
             for project in formset.deleted_objects:
                 project.delete()
-            
-            messages.success(request, 'Project details saved successfully')
-
-            # Redirect to approval or next step
-            return redirect('loans:loan_approval', member_number=member_number)
+            messages.success(request, 'आयोजना विवरण सेभ भयो।')
+            # Member detail ma redirect garnus — loan_id thaha chhaina yaha
+            return redirect('members:member_detail', member_number=member_number)
+        else:
+            messages.error(request, 'कृपया फाराम सही तरिकाले भर्नुहोस्।')
     else:
-        formset = ProjectDetailFormSet(queryset=existing_projects)   
-    
-    context = {
+        formset = ProjectDetailFormSet(queryset=existing_projects)
+ 
+    return render(request, 'projects/project_form.html', {
         'member': member,
         'formset': formset,
-    }
-
-    return render(request, 'projects/project_form.html', context)
+    })
 
 @login_required
 def project_create(request, member_number):
