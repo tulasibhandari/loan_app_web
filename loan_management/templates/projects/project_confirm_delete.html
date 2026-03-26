@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}आयोजना मेटाउने?{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card shadow-sm border-danger">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>
+            <span class="nepali-text">आयोजना मेटाउने?</span>
+          </h5>
+        </div>
+        <div class="card-body text-center py-4">
+          <div style="width:56px; height:56px; border-radius:50%; background:#f8d7da;
+                      display:flex; align-items:center; justify-content:center;
+                      margin:0 auto 1rem; font-size:1.4rem; color:#dc3545;">
+            <i class="bi bi-kanban"></i>
+          </div>
+
+          <h5 class="nepali-text">{{ project.project_name }}</h5>
+          <p class="text-muted mb-1" style="font-size:0.85rem;">
+            <span class="nepali-text">सदस्य:</span> {{ member.member_name }} ({{ member.member_number }})
+          </p>
+          <p class="text-muted mb-3" style="font-size:0.85rem;">
+            <span class="nepali-text">माग रकम:</span> रु. {{ project.requested_loan_amount }}
+          </p>
+
+          <div class="alert alert-warning py-2" style="font-size:0.84rem;">
+            <i class="bi bi-exclamation-circle me-1"></i>
+            <span class="nepali-text">यो कार्य पूर्ववत गर्न सकिँदैन।</span>
+          </div>
+
+          <form method="post" class="d-flex gap-2 justify-content-center mt-3">
+            {% csrf_token %}
+            <a href="{% url 'projects:project_name' member.member_number %}"
+               class="btn btn-outline-secondary">
+              <i class="bi bi-x-circle me-1"></i>Cancel
+            </a>
+            <button type="submit" class="btn btn-danger">
+              <i class="bi bi-trash3 me-1"></i>
+              <span class="nepali-text">मेटाउनुहोस्</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

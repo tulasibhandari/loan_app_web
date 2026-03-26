@@ -1,6 +1,7 @@
 from django.db import models
 from members.models import Member
 from accounts.models import User
+from pathlib import Path
 
 class ReportTracking(models.Model):
     """Track generated reports"""
@@ -13,6 +14,10 @@ class ReportTracking(models.Model):
     class Meta:
         db_table = 'report_tracking'
         ordering = ['-generated_date']
+
+    @property
+    def filename(self):
+        return Path(self.file_path).name if self.file_path else ''
     
     def __str__(self):
         return f"{self.report_type} - {self.member.member_number}, - {self.generated_date}"

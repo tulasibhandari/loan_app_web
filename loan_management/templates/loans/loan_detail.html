@@ -637,7 +637,7 @@
                     <h6 class="mb-0 nepali-text">
                         <i class="bi bi-kanban text-primary me-1"></i> परियोजना विवरण
                     </h6>
-                    <a href="{% url 'projects:project_name' loan.member.member_number %}"
+                    <a href="#"
                     class="btn btn-sm btn-outline-primary">
                         <i class="bi bi-pencil-square me-1"></i>
                         {% if projects %}सम्पादन{% else %} परियोजना थप्नुहोस्{% endif %}
@@ -661,6 +661,7 @@
                                     <th class="nepali-text">माग रकम</th>
                                     <th class="nepali-text">जम्मा लागत</th>
                                     <th class="nepali-text">कैफियत</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -671,6 +672,16 @@
                                     <td>रु. {{ p.requested_loan_amount }}</td>
                                     <td>रु. {{ p.total_cost }}</td>
                                     <td>{{ p.remarks|default:"—" }}</td>
+                                    <td>
+                                        <a href="{% url 'projects:project_edit' p.id %}" 
+                                        class="btn btn-xs btn-outline-primary" style="font-size:0.75rem; padding:2px 8px;">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'projects:project_delete' p.id %}"
+                                        class="btn btn-xs btn-outline-danger" style="font-size:0.75rem; padding:2px 8px;">
+                                            <i class="bi bi-trash3"></i>
+                                        </a>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

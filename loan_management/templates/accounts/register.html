@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}नयाँ प्रयोगकर्ता दर्ता{% endblock %}
+
+{% block extra_css %}
+<style>
+  .register-wrap { max-width: 580px; margin: 0 auto; }
+  .form-label { font-size: 0.82rem; font-weight: 500; color: #495057; margin-bottom: 0.3rem; }
+  .form-control, .form-select {
+    border: 1.5px solid var(--border-color); border-radius: 6px;
+    font-size: 0.88rem; padding: 0.42rem 0.75rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52,152,219,0.15); outline: none;
+  }
+  .field-hint { font-size: 0.74rem; color: #6c757d; margin-top: 3px; }
+  .strength-bar {
+    height: 4px; border-radius: 2px; margin-top: 5px;
+    background: var(--border-color); transition: all 0.3s;
+  }
+  .strength-bar-fill { height: 100%; border-radius: 2px; transition: all 0.3s; width: 0%; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="register-wrap">
+
+    <!-- Breadcrumb -->
+    <nav style="font-size:0.82rem; color:#6c757d;" class="mb-3">
+      <a href="{% url 'dashboard:home' %}" style="color:var(--primary-color);">Dashboard</a> /
+      <a href="{% url 'accounts:user_list' %}" style="color:var(--primary-color);" class="nepali-text">प्रयोगकर्ताहरू</a> /
+      <span class="text-muted nepali-text">नयाँ दर्ता</span>
+    </nav>
+
+    <!-- Messages -->
+    {% for msg in messages %}
+    <div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}{{ msg.tags }}{% endif %} alert-dismissible fade show mb-3">
+      {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+
+    <div class="card shadow-sm">
+      <div class="card-header text-white"
+           style="background:linear-gradient(135deg,var(--primary-color),#2980b9); border-radius:8px 8px 0 0;">
+        <h5 class="mb-0">
+          <i class="bi bi-person-plus me-2"></i>
+          <span class="nepali-text">नयाँ प्रयोगकर्ता दर्ता</span>
+        </h5>
+      </div>
+
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <div class="row g-3">
+
+            <!-- Username -->
+            <div class="col-md-6">
+              <label class="form-label">Username <span class="text-danger">*</span></label>
+              {{ form.username }}
+              {% if form.username.errors %}
+                <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.username.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              {{ form.email }}
+              {% if form.email.errors %}
+                <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.email.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Full Name Nepali -->
+            <div class="col-12">
+              <label class="form-label nepali-text">पूरा नाम (नेपालीमा) <span class="text-danger">*</span></label>
+              {{ form.full_name_nepali }}
+              <div class="field-hint nepali-text">उदाहरण: राम बहादुर श्रेष्ठ</div>
+              {% if form.full_name_nepali.errors %}
+                <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.full_name_nepali.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Role -->
+            <div class="col-md-6">
+              <label class="form-label">Role <span class="text-danger">*</span></label>
+              {{ form.role }}
+              {% if form.role.errors %}
+                <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.role.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Post -->
+            <div class="col-md-6">
+              <label class="form-label nepali-text">पद</label>
+              {{ form.post }}
+              <div class="field-hint nepali-text">जस्तै: शाखा प्रमुख, कार्यालय सहयोगी</div>
+              {% if form.post.errors %}
+                <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.post.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Divider -->
+            <div class="col-12">
+              <hr class="my-1">
+              <small class="text-muted"><i class="bi bi-lock me-1"></i>Password</small>
+            </div>
+
+            <!-- Password 1 -->
+            <div class="col-md-6">
+              <label class="form-label nepali-text">पासवर्ड <span class="text-danger">*</span></label>
+              {{ form.password1 }}
+              <div class="strength-bar"><div class="strength-bar-fill" id="strength-fill"></div></div>
+              <div class="field-hint" id="strength-text">कम्तिमा ८ अक्षर हुनुपर्छ</div>
+              {% if form.password1.errors %}
+                <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.password1.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Password 2 -->
+            <div class="col-md-6">
+              <label class="form-label nepali-text">पासवर्ड पुन: लेख्नुहोस् <span class="text-danger">*</span></label>
+              {{ form.password2 }}
+              <div class="field-hint" id="match-text"></div>
+              {% if form.password2.errors %}
+                <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.password2.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+          </div>
+
+          <!-- Buttons -->
+          <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+            <a href="{% url 'accounts:user_list' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left me-1"></i>Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-person-check me-1"></i>
+              <span class="nepali-text">दर्ता गर्नुहोस्</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const p1   = document.getElementById('id_password1');
+  const p2   = document.getElementById('id_password2');
+  const fill = document.getElementById('strength-fill');
+  const stxt = document.getElementById('strength-text');
+  const mtxt = document.getElementById('match-text');
+
+  const colors = ['#e74c3c','#f39c12','#3498db','#1abc9c'];
+  const labels = ['कमजोर','ठीकै','राम्रो','बलियो'];
+  const widths = ['25%','50%','75%','100%'];
+
+  p1.addEventListener('input', function() {
+    const v = this.value;
+    let score = 0;
+    if (v.length >= 8) score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+
+    if (!v) {
+      fill.style.width = '0%';
+      stxt.textContent = 'कम्तिमा ८ अक्षर हुनुपर्छ';
+      stxt.style.color = '#6c757d';
+    } else {
+      const i = Math.max(0, score - 1);
+      fill.style.width      = widths[i];
+      fill.style.background = colors[i];
+      stxt.textContent      = labels[i];
+      stxt.style.color      = colors[i];
+    }
+    checkMatch();
+  });
+
+  p2.addEventListener('input', checkMatch);
+
+  function checkMatch() {
+    if (!p2.value) { mtxt.textContent = ''; return; }
+    if (p1.value === p2.value) {
+      mtxt.textContent  = '✓ पासवर्ड मेल खायो';
+      mtxt.style.color  = '#1abc9c';
+    } else {
+      mtxt.textContent  = '✗ पासवर्ड मेल खाएन';
+      mtxt.style.color  = '#e74c3c';
+    }
+  }
+</script>
+{% endblock %}

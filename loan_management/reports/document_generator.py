@@ -8,11 +8,18 @@ class DocumentGenerator:
 
     def __init__(self, template_name):
         self.template_path = os.path.join(
-            settings.MEDIA_ROOT, 'templates', 'template_name'
+            settings.MEDIA_ROOT, 'templates', template_name
         )
     
     def generate(self, context, output_filename):
         """ Generate document with given context"""
+
+        # Check template files
+        if not os.path.exists(self.template_path):
+            raise Exception(
+                f"Template file not found: {self.template_path}\n"
+                f"Please place '.docx' template files in {os.path.join(settings.MEDIA_ROOT, 'templates')}"
+            )
         try:
             doc = DocxTemplate(self.template_path)
             doc.render(context)

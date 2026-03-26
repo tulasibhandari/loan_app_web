@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}प्रयोगकर्ता व्यवस्थापन{% endblock %}
+
+{% block extra_css %}
+<style>
+  .user-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.82rem; font-weight: 600; flex-shrink: 0;
+  }
+  .role-admin     { background: #d1ecf1; color: #0c5460; }
+  .role-officer   { background: #d4edda; color: #155724; }
+  .role-accountant{ background: #fff3cd; color: #856404; }
+  .role-user      { background: #f8f9fa; color: #495057; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-3">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="mb-0">
+        <i class="bi bi-people me-2" style="color:var(--primary-color);"></i>
+        <span class="nepali-text">प्रयोगकर्ता व्यवस्थापन</span>
+      </h4>
+      <small class="text-muted nepali-text">जम्मा {{ users.count }} प्रयोगकर्ता</small>
+    </div>
+    {% if user.role == 'admin' or user.role == 'officer' %}
+    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-person-plus me-1"></i>
+      <span class="nepali-text">नयाँ प्रयोगकर्ता</span>
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Messages -->
+  {% for msg in messages %}
+  <div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}{{ msg.tags }}{% endif %} alert-dismissible fade show mb-3">
+    {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+
+  <!-- Table Card -->
+  <div class="card shadow-sm">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--primary-color),#2980b9); color:#fff; border-radius:8px 8px 0 0;">
+      <h6 class="mb-0"><i class="bi bi-list-ul me-2"></i>प्रयोगकर्ता सूची</h6>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Username</th>
+              <th class="nepali-text">पूरा नाम</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th class="nepali-text">पद</th>
+              <th class="nepali-text">स्थिति</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="user-avatar
+                    {% if u.role == 'admin' %}role-admin
+                    {% elif u.role == 'officer' %}role-officer
+                    {% elif u.role == 'accountant' %}role-accountant
+                    {% else %}role-user{% endif %}">
+                    {{ u.username|first|upper }}
+                  </div>
+                  <div>
+                    <strong>{{ u.username }}</strong>
+                    {% if u == request.user %}
+                      <span class="badge bg-secondary ms-1" style="font-size:0.62rem;">You</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </td>
+              <td class="nepali-text">{{ u.full_name_nepali|default:"—" }}</td>
+              <td style="font-size:0.84rem;">{{ u.email|default:"—" }}</td>
+              <td>
+                <span class="badge
+                  {% if u.role == 'admin' %}bg-danger
+                  {% elif u.role == 'officer' %}bg-success
+                  {% elif u.role == 'accountant' %}bg-warning text-dark
+                  {% else %}bg-secondary{% endif %}">
+                  {{ u.get_role_display }}
+                </span>
+              </td>
+              <td class="nepali-text" style="font-size:0.84rem;">{{ u.post|default:"—" }}</td>
+              <td>
+                {% if u.is_active %}
+                  <span class="badge bg-success">Active</span>
+                {% else %}
+                  <span class="badge bg-secondary">Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if request.user.role == 'admin' and u != request.user %}
+                <a href="{% url 'accounts:user_delete' u.id %}"
+                   class="btn btn-sm btn-outline-danger"
+                   title="Delete">
+                  <i class="bi bi-trash3"></i>
+                </a>
+                {% else %}
+                <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted nepali-text">
+                <i class="bi bi-inbox me-2"></i>कुनै प्रयोगकर्ता भेटिएन।
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

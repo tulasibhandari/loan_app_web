@@ -1,0 +1,61 @@
+<!-- =====================================================
+     SAVE AS: templates/reports/report_success.html
+     ===================================================== -->
+{% extends 'base.html' %}
+
+{% block title %}रिपोर्ट बनाइयो!{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-sm text-center" style="border-radius:10px; overflow:hidden;">
+        <div class="card-header text-white py-3"
+             style="background:linear-gradient(135deg,var(--success-color),#16a085);">
+          <i class="bi bi-check-circle" style="font-size:2rem;"></i>
+          <h5 class="mt-2 mb-0 nepali-text">रिपोर्टहरू सफलतापूर्वक बनाइयो!</h5>
+        </div>
+        <div class="card-body p-4">
+
+          {% if files %}
+          <p class="text-muted nepali-text mb-3">तलका फाइलहरू डाउनलोड गर्नुहोस्:</p>
+
+          <div class="d-flex flex-column gap-2 mb-4">
+            {% for f in files %}
+            <a href="{% url 'reports:download_report' f.filename %}"
+               class="btn btn-outline-primary d-flex align-items-center gap-2 justify-content-between">
+              <span>
+                <i class="bi bi-file-word me-1"></i>
+                <span class="nepali-text">
+                  {% if f.type == 'loan_application' %}ऋण आवेदन
+                  {% elif f.type == 'tamasuk' %}तमासुक
+                  {% elif f.type == 'loan_approval' %}ऋण स्वीकृत
+                  {% elif f.type == 'debit_authority' %}खाता अख्तियारी
+                  {% elif f.type == 'manjurinama' %}मञ्जुरीनामा
+                  {% elif f.type == 'guarantor' %}व्यक्तिगत जमानी
+                  {% else %}{{ f.type }}{% endif %}
+                </span>
+              </span>
+              <i class="bi bi-download"></i>
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted nepali-text">कुनै फाइल भेटिएन।</p>
+          {% endif %}
+
+          <div class="d-flex gap-2 justify-content-center">
+            <a href="{% url 'reports:report_center' %}" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-arrow-left me-1"></i>फर्कनुहोस्
+            </a>
+            <a href="{% url 'reports:report_history' %}" class="btn btn-outline-info btn-sm">
+              <i class="bi bi-clock-history me-1"></i>History
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
