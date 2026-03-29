@@ -5,6 +5,7 @@ from collateral.models import (
     CollateralAffiliation, CollateralIncomeExpense
 )
 from projects.models import ProjectDetail
+from .services.report_context.utils import np
 
 
 try:
@@ -131,54 +132,55 @@ class ReportContextBuilder:
                 'company_address': org.address if org else '',
 
                 # Member
-                'member_number':    member.member_number,
+                'member_number':    np(member.member_number),
                 'member_name':      member.member_name,
-                'phone':            member.phone or '',
+                'phone':            np(member.phone or ''),
                 'email':            member.email or '',
-                'citizenship_no':   member.citizenship_no or '',
+                'citizenship_no':   np(member.citizenship_no or ''),
                 'father_name':      member.father_name or '',
                 'grandfather_name': member.grandfather_name or '',
                 'spouse_name':      member.spouse_name or '',
+                'spouse_phone':     np(member.spouse_phone) or '',
                 'address':          member.address or '',       # Fix: add_to_class -> address
-                'ward_no':          member.ward_no or '',
+                'ward_no':          np(member.ward_no or ''),
                 'profession':       member.profession or '',
-                'dob_bs':           member.dob_bs or '',
+                'dob_bs':           np(member.dob_bs or ''),
                 'business_name':    member.business_name or '',
                 'business_address': member.business_address or '',
 
                 # Loan
                 'loan_type':            loan.loan_type,
-                'interest_rate':        loan.interest_rate,
-                'loan_duration':        loan.loan_duration,
-                'repayment_duration':   loan.repayment_duration,
-                'loan_amount':          loan.loan_amount,
+                'interest_rate':        np(loan.interest_rate),
+                'loan_duration':        np(loan.loan_duration),
+                'repayment_duration':   np(loan.repayment_duration),
+                'loan_amount':          np(loan.loan_amount),
                 'loan_amount_in_words': loan.loan_amount_in_words or num_to_nepali_words(loan.loan_amount),
                 'loan_status':          loan.status,
-                'loan_completion_year':  loan.loan_completion_year or '',
-                'loan_completion_month': loan.loan_completion_month or '',
-                'loan_completion_day':   loan.loan_completion_day or '',
+                'loan_completion_year':  np(loan.loan_completion_year or ''),
+                'loan_completion_month': np(loan.loan_completion_month or ''),
+                'loan_completion_day':   np(loan.loan_completion_day or ''),
 
                 # Date (BS)
-                'bs_year':    bs_year,
-                'bs_month':   bs_month,
-                'bs_day':     bs_day,
-                'date_nepali': date_nepali,
+                'bs_year':    np(bs_year),
+                'bs_month':   np(bs_month),
+                'bs_day':     np(bs_day),
+                'date_nepali': np(date_nepali),
 
                 # Approval
-                'approval_date':             approval.approval_date if approval else '',
+                'approval_date':             np(approval.approval_date if approval else ''),
                 'entered_by':                entered_by,
                 'entered_post':              entered_post,
                 'approved_by':               approved_by,
                 'approver_post':             approver_post,
-                'approved_loan_amount':      approval.approved_loan_amount if approval else '',
+                'approved_loan_amount':      np(approval.approved_loan_amount if approval else ''),
                 'approved_loan_amount_words': approval.approved_loan_amount_words if approval else '',
                 'remarks':                   approval.remarks if approval else '',
 
                 # Collateral Basic
-                'monthly_saving': collateral_basic.monthly_saving if collateral_basic else '',
-                'child_saving':   collateral_basic.child_saving if collateral_basic else '',
-                'total_saving':   collateral_basic.total_saving if collateral_basic else '',
-                'share_amount':   collateral_basic.share_amount if collateral_basic else '',
+                'monthly_saving': np(collateral_basic.monthly_saving if collateral_basic else ''),
+                'child_saving':   np(collateral_basic.child_saving if collateral_basic else ''),
+                'total_saving':   np(collateral_basic.total_saving if collateral_basic else ''),
+                'share_amount':   np(collateral_basic.share_amount if collateral_basic else ''),
 
                 # Properties list
                 'properties': [
@@ -188,10 +190,10 @@ class ReportContextBuilder:
                         'grandfather':      p.grandfather_or_father_inlaw_name,
                         'district':         p.district,
                         'municipality_vdc': p.municipality_vdc,   # Fix: municipaliy_vdc typo
-                        'ward_no':          p.ward_no,
-                        'sheet_no':         p.sheet_no,
-                        'plot_no':          p.plot_no,
-                        'area':             p.area,
+                        'ward_no':          np(p.ward_no),
+                        'sheet_no':         np(p.sheet_no),
+                        'plot_no':          np(p.plot_no),
+                        'area':             np(p.area),
                         'land_type':        p.land_type,
                     }
                     for p in properties
@@ -201,10 +203,10 @@ class ReportContextBuilder:
                 'family_members': [
                     {
                         'name':           f.name,
-                        'age':            f.age,
+                        'age':            np(f.age),
                         'relation':       f.relation,
                         'occupation':     f.occupation,
-                        'monthly_income': f.monthly_income,
+                        'monthly_income': np(f.monthly_income),
                         'member_of_coop': f.member_of_other_coop,
                     }
                     for f in family_details
@@ -219,8 +221,8 @@ class ReportContextBuilder:
                     {'field': ie.field, 'amount': ie.amount}
                     for ie in income_expenses if ie.type == 'expense'
                 ],
-                'total_income':  sum(float(ie.amount or 0) for ie in income_expenses if ie.type == 'income'),
-                'total_expense': sum(float(ie.amount or 0) for ie in income_expenses if ie.type == 'expense'),
+                'total_income':  np(sum(float(ie.amount or 0) for ie in income_expenses if ie.type == 'income')),
+                'total_expense': np(sum(float(ie.amount or 0) for ie in income_expenses if ie.type == 'expense')),
 
                 # Affiliations
                 'affiliations': [
@@ -228,7 +230,7 @@ class ReportContextBuilder:
                         'institution':  a.institution,
                         'address':      a.address_of_institution,
                         'position':     a.position,
-                        'income':       a.estimated_income,
+                        'income':       np(a.estimated_income),
                         'remarks':      a.remarks or '',
                     }
                     for a in affiliations
@@ -237,10 +239,10 @@ class ReportContextBuilder:
                 # Projects
                 'projects': [
                     {
-                        'project_name':          p.project_name,
-                        'self_investment':        p.self_investment,
-                        'requested_loan_amount':  p.requested_loan_amount,
-                        'total_cost':             p.total_cost,
+                        'project_name':           p.project_name,
+                        'self_investment':        np(p.self_investment),
+                        'requested_loan_amount':  np(p.requested_loan_amount),
+                        'total_cost':             np(p.total_cost),
                         'remarks':                p.remarks or '',
                     }
                     for p in projects
@@ -253,8 +255,8 @@ class ReportContextBuilder:
                         'relation': w.relation,
                         'address':  w.address,
                         'tole':     w.tole,
-                        'ward':     w.ward,
-                        'age':      w.age,
+                        'ward':     np(w.ward),
+                        'age':      np(w.age),
                     }
                     for w in witnesses
                 ],
@@ -264,12 +266,12 @@ class ReportContextBuilder:
                     {
                         'guarantor_name':        g.guarantor_name,
                         'guarantor_address':     g.guarantor_address,
-                        'guarantor_ward':        g.guarantor_ward,
-                        'guarantor_phone':       g.guarantor_phone,
-                        'guarantor_citizenship': g.guarantor_citizenship,
+                        'guarantor_ward':        np(g.guarantor_ward),
+                        'guarantor_phone':       np(g.guarantor_phone),
+                        'guarantor_citizenship': np(g.guarantor_citizenship),
                         'guarantor_grandfather': g.guarantor_grandfather,
                         'guarantor_father':      g.guarantor_father,
-                        'guarantor_age':         g.guarantor_age,  
+                        'guarantor_age':         np(g.guarantor_age),  
                         'guarantor_citizenship_issue_district':  g.guarantor_citizenship_issue_district,
                     }
                     for g in guarantors
