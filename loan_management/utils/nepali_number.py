@@ -23,3 +23,12 @@ def to_nepali_digits(value):
     value_str = str(value)
 
     return ''.join(NEPALI_DIGITS.get(ch, ch) for ch in value_str)
+
+
+NEPALI_TO_ENGLISH = {
+    '०': '0', '१': '1', '२': '2', '३': '3', '४': '4',
+    '५': '5', '६': '6', '७': '7', '८': '8', '९': '9',
+}
+
+def to_english_digits(value):
+    return ''.join(NEPALI_TO_ENGLISH.get(ch, ch) for ch in str(value))

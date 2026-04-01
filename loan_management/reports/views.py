@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.http import FileResponse, Http404
 from django.conf import settings
 from .document_generator import DocumentGenerator
-from .context_builder import ReportContextBuilder
+from .services.report_context.context_builder import ReportContextBuilder
 from .models import ReportTracking
 from loans.models import LoanInfo
 from members.models import Member
@@ -46,7 +46,7 @@ def generate_report(request):
     try:
         member = get_object_or_404(Member, member_number=member_number)
 
-        context = ReportContextBuilder.build_loan_application_context(
+        context = ReportContextBuilder.build(
             member_number, entered_by, entered_post, approved_by, approver_post
         )
 

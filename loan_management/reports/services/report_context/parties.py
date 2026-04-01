@@ -1,22 +1,27 @@
 from .utils import np
 
 def get_parties_context(member):
-    witnesses = getattr(member, 'witnessinfo_set', []).all() if hasattr(member, 'witnessinfo_set') else []
-    guarantors = getattr(member, 'guarantordetails_set', []).all() if hasattr(member, 'guarantordetails_set')else []
+    witnesses = member.witnessinfo_set.all() or []
+    guarantors = member.guarantordetails_set.all() or []
 
-    return{
+
+    return {
         'witnesses': [
             {
                 'name': w.name,
                 'relation': w.relation,
+                'address': w.address,
+                'ward': np(w.ward),
                 'age': np(w.age),
             }
             for w in witnesses
         ],
 
-        'guarantor': [
+        'guarantors': [
             {
                 'guarantor_name': g.guarantor_name,
+                'guarantor_address': g.guarantor_address,
+                'guarantor_ward': np(g.guarantor_ward),
                 'guarantor_phone': np(g.guarantor_phone),
                 'guarantor_age': np(g.guarantor_age),
             }
